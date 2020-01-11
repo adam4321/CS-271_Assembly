@@ -1,7 +1,7 @@
 TITLE Program 1  -- Sums and Differences
 
 ; Author:						Adam Wright
-; Last Modified:				1-8-2020
+; Last Modified:				1-11-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271--400
 ; Project Number:               1  
@@ -16,17 +16,22 @@ INCLUDE Irvine32.inc
 
 ; (insert constant definitions here)
 
-.data  ; variable definitions
+; Variable definitions
+.data
 intro		BYTE	"Adam Wright  --  Program-1 -- Sums and differences", 0
 instrctMsg	BYTE	"Enter 3 numbers A > B > C, and I'll show you the sums and differences!", 0
 firPrompt	BYTE	"First number: ", 0
 secPrompt	BYTE	"Second number: ", 0
 thrdPrompt	BYTE	"Third number: ", 0
+numA		DWORD	?								; Integer A to be entered by user
+numB		DWORD	?								; Integer A to be entered by user
+numC		DWORD	?								; Integer A to be entered by user
 addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
 goodBye		BYTE	"Good-bye !!!", 0
 
-.code  ; executable instructions
+; Executable instructions
+.code  
 main PROC
 
 ; Introduce programmer and title
@@ -43,8 +48,19 @@ main PROC
 	call	CrLf
 
 ; Prompt for first number
+	mov		edx, OFFSET firPrompt
+	call	WriteString
+	call	ReadInt
+	mov		numA, eax
+
+; Prompt for second number
+	mov		edx, OFFSET secPrompt
+	call	WriteString
+	call	ReadInt
+	mov		numB, ebx
 
 ; Say "Good-bye"
+	call	CrLf
 	mov		edx, OFFSET goodBye
 	call	WriteString
 	call	CrLf
