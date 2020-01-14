@@ -18,10 +18,12 @@ INCLUDE Irvine32.inc
 .data
 intro		BYTE	"Adam Wright  --  Program-1 -- Sums and differences", 0
 extCred1	BYTE	"**EC: Program repeats until the user chooses to quit", 0
+extCred2	BYTE	"**EC: Program verifies the numbers are in descending order", 0
 instrctMsg	BYTE	"Enter 3 numbers A > B > C, and I'll show you the sums and differences!", 0
 firPrompt	BYTE	"First number: ", 0
 secPrompt	BYTE	"Second number: ", 0
 thrdPrompt	BYTE	"Third number: ", 0
+errPrompt	BYTE	"Error: The numbers must be in descending order", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
@@ -41,6 +43,9 @@ main PROC
 	call	WriteString
 	call	CrLf
 	mov		edx, OFFSET extCred1
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET extCred2
 	call	WriteString
 	call	CrLf
 	call	CrLf
@@ -70,7 +75,26 @@ START_LOOP:											; Start of program loop
 	call	WriteString
 	call	ReadInt
 	mov		numC, eax
-	call	CrLf	
+	call	CrLf
+
+; Check for descending order						; Test for descending numbers
+	mov		eax, numA
+	cmp		eax, numB
+	jbe		INPUT_ERROR
+	mov		eax, numB
+	cmp		eax, numC
+	jbe		INPUT_ERROR
+	jmp		MATH
+
+INPUT_ERROR:										; Input numbers error message
+
+; Error Message
+	mov		edx, OFFSET	errPrompt
+	call	WriteString
+	call	CrLf
+	Jmp		START_LOOP
+
+MATH:												; Input tests pass  ---  Start Math section
 
 ; Add and print for A and B							; Calc and print A and B
 	mov		eax, numA
@@ -170,18 +194,19 @@ START_LOOP:											; Start of program loop
 	add		eax, numB
 	call	WriteDec
 	call	CrLf
-	call	CrLf
 
 ; Prompt for quit									; Ask the user to quit
+	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
+	call	CrLf
 	call	ReadInt
 	cmp		eax, 1
-	jle		CONTINUE
+	je		CONTINUE
 	jmp		START_LOOP
 	
 
-CONTINUE:											; Print the final message when q entered
+CONTINUE:											; Print the final message when 1 entered
 
 ; Say "Good-bye"
 	call	CrLf
