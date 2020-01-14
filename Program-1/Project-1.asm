@@ -1,7 +1,7 @@
 TITLE Program 1  -- Sums and Differences
 
 ; Author:						Adam Wright
-; Last Modified:				1-11-2020
+; Last Modified:				1-14-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271--400
 ; Project Number:               1  
@@ -14,22 +14,22 @@ TITLE Program 1  -- Sums and Differences
 
 INCLUDE Irvine32.inc
 
-; (insert constant definitions here)
-
 ; Variable definitions
 .data
 intro		BYTE	"Adam Wright  --  Program-1 -- Sums and differences", 0
+extCred1	BYTE	"**EC: Program repeats until the user chooses to quit", 0
 instrctMsg	BYTE	"Enter 3 numbers A > B > C, and I'll show you the sums and differences!", 0
 firPrompt	BYTE	"First number: ", 0
 secPrompt	BYTE	"Second number: ", 0
 thrdPrompt	BYTE	"Third number: ", 0
-numA		DWORD	?								; Integer A to be entered by user
-numB		DWORD	?								; Integer B to be entered by user
-numC		DWORD	?								; Integer C to be entered by user
+quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
 eqlSym		BYTE	" = ", 0
 goodBye		BYTE	"Good-bye !!!", 0
+numA		DWORD	?								; Integer A to be entered by user
+numB		DWORD	?								; Integer B to be entered by user
+numC		DWORD	?								; Integer C to be entered by user
 
 ; Executable instructions
 .code  
@@ -40,15 +40,20 @@ main PROC
 	mov		edx, OFFSET intro
 	call	WriteString
 	call	CrLf
+	mov		edx, OFFSET extCred1
+	call	WriteString
+	call	CrLf
 	call	CrLf
 
 ; Print the instructions
 	mov		edx, OFFSET instrctMsg
 	call	WriteString
 	call	CrLf
-	call	CrLf
 
-; Prompt for first number
+START_LOOP:											; Start of program loop
+
+; Prompt for first number							; Numbers prompts
+	call	CrLf
 	mov		edx, OFFSET firPrompt
 	call	WriteString
 	call	ReadInt
@@ -60,14 +65,14 @@ main PROC
 	call	ReadInt
 	mov		numB, eax
 
-; Prompt for thrid number
+; Prompt for third number
 	mov		edx, OFFSET thrdPrompt
 	call	WriteString
 	call	ReadInt
 	mov		numC, eax
-	call	CrLf
+	call	CrLf	
 
-; Add and print for A and B
+; Add and print for A and B							; Calc and print A and B
 	mov		eax, numA
 	call	WriteDec
 	mov		edx, OFFSET addSym
@@ -94,7 +99,7 @@ main PROC
 	call	WriteDec
 	call	CrLf
 
-; Add and print for A and C
+; Add and print for A and C							; Calc and print A and C
 	mov		eax, numA
 	call	WriteDec
 	mov		edx, OFFSET addSym
@@ -121,7 +126,7 @@ main PROC
 	call	WriteDec
 	call	CrLf
 
-; Add and print for B and C
+; Add and print for B and C							; Calc and print B and C
 	mov		eax, numB
 	call	WriteDec
 	mov		edx, OFFSET addSym
@@ -148,7 +153,7 @@ main PROC
 	call	WriteDec
 	call	CrLf
 
-; Add and print for A and B and C
+; Add and print for A and B and C					; Calc and print A B C
 	mov		eax, numA
 	call	WriteDec
 	mov		edx, OFFSET addSym
@@ -165,6 +170,18 @@ main PROC
 	add		eax, numB
 	call	WriteDec
 	call	CrLf
+	call	CrLf
+
+; Prompt for quit									; Ask the user to quit
+	mov		edx, OFFSET	quitPrompt
+	call	WriteString
+	call	ReadInt
+	cmp		eax, 1
+	jle		CONTINUE
+	jmp		START_LOOP
+	
+
+CONTINUE:											; Print the final message when q entered
 
 ; Say "Good-bye"
 	call	CrLf
@@ -172,7 +189,8 @@ main PROC
 	call	WriteString
 	call	CrLf
 
-	exit								; exit to operating system
+	exit											; exit to operating system
+
 main ENDP
 
 END main
