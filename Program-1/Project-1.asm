@@ -24,8 +24,8 @@ firPrompt	BYTE	"First number: ", 0
 secPrompt	BYTE	"Second number: ", 0
 thrdPrompt	BYTE	"Third number: ", 0
 numA		DWORD	?								; Integer A to be entered by user
-numB		DWORD	?								; Integer A to be entered by user
-numC		DWORD	?								; Integer A to be entered by user
+numB		DWORD	?								; Integer B to be entered by user
+numC		DWORD	?								; Integer C to be entered by user
 addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
 eqlSym		BYTE	" = ", 0
@@ -94,15 +94,85 @@ main PROC
 	call	WriteDec
 	call	CrLf
 
+; Add and print for A and C
+	mov		eax, numA
+	call	WriteDec
+	mov		edx, OFFSET addSym
+	call	WriteString
+	mov		eax, numC
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	add		eax, numA
+	call	WriteDec
+	call	CrLf
+
+; Subtract and print for A and C
+	mov		eax, numA
+	call	WriteDec
+	mov		edx, OFFSET subSym
+	call	WriteString
+	mov		eax, numC
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	mov		eax, numA
+	sub		eax, numC
+	call	WriteDec
+	call	CrLf
+
+; Add and print for B and C
+	mov		eax, numB
+	call	WriteDec
+	mov		edx, OFFSET addSym
+	call	WriteString
+	mov		eax, numC
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	add		eax, numB
+	call	WriteDec
+	call	CrLf
+
+; Subtract and print for B and C
+	mov		eax, numB
+	call	WriteDec
+	mov		edx, OFFSET subSym
+	call	WriteString
+	mov		eax, numC
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	mov		eax, numB
+	sub		eax, numC
+	call	WriteDec
+	call	CrLf
+
+; Add and print for A and B and C
+	mov		eax, numA
+	call	WriteDec
+	mov		edx, OFFSET addSym
+	call	WriteString
+	mov		eax, numB
+	call	WriteDec
+	mov		edx, OFFSET addSym
+	call	WriteString
+	mov		eax, numC
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	add		eax, numA
+	add		eax, numB
+	call	WriteDec
+	call	CrLf
+
 ; Say "Good-bye"
 	call	CrLf
 	mov		edx, OFFSET goodBye
 	call	WriteString
 	call	CrLf
 
-	exit	; exit to operating system
+	exit								; exit to operating system
 main ENDP
-
-; (insert additional procedures here)
 
 END main
