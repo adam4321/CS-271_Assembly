@@ -28,6 +28,7 @@ numB		DWORD	?								; Integer A to be entered by user
 numC		DWORD	?								; Integer A to be entered by user
 addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
+eqlSym		BYTE	" = ", 0
 goodBye		BYTE	"Good-bye !!!", 0
 
 ; Executable instructions
@@ -57,7 +58,41 @@ main PROC
 	mov		edx, OFFSET secPrompt
 	call	WriteString
 	call	ReadInt
-	mov		numB, ebx
+	mov		numB, eax
+
+; Prompt for thrid number
+	mov		edx, OFFSET thrdPrompt
+	call	WriteString
+	call	ReadInt
+	mov		numC, eax
+	call	CrLf
+
+; Add and print for A and B
+	mov		eax, numA
+	call	WriteDec
+	mov		edx, OFFSET addSym
+	call	WriteString
+	mov		eax, numB
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	add		eax, numA
+	call	WriteDec
+	call	CrLf
+
+; Subtract and print for A and B
+	mov		eax, numA
+	call	WriteDec
+	mov		edx, OFFSET subSym
+	call	WriteString
+	mov		eax, numB
+	call	WriteDec
+	mov		edx, OFFSET eqlSym
+	call	WriteString
+	mov		eax, numA
+	sub		eax, numB
+	call	WriteDec
+	call	CrLf
 
 ; Say "Good-bye"
 	call	CrLf
