@@ -58,6 +58,7 @@ main PROC
 	mov		edx, OFFSET intro
 	call	WriteString
 	call	CrLf
+    call    CrLf
 	mov		edx, OFFSET extCred1
 	call	WriteString
 	call	CrLf
