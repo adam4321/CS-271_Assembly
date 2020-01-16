@@ -76,7 +76,7 @@ main PROC
 	call	CrLf
 
 
-START_LOOP:														; User can press 2 and continue with JMP From: line-309
+START_LOOP:														; User can press 2 and continue with JMP From: line-310
 
 ; Prompt for first number										; Prompt for 3 numbers
 	call	CrLf
@@ -108,7 +108,7 @@ START_LOOP:														; User can press 2 and continue with JMP From: line-309
 	jmp		MATH
 
 
-INPUT_ERROR:													; JMP From: line-103 or 106 if the input numbers aren't in descending order
+INPUT_ERROR:													; JMP From: line-104 or 107 if the input numbers aren't in descending order
 
 ; Non-descending input numbers Error Message
 	mov		edx, OFFSET	errPrompt
@@ -117,7 +117,7 @@ INPUT_ERROR:													; JMP From: line-103 or 106 if the input numbers aren't
 	Jmp		START_LOOP											; After error message JMP To: line-79 to request numbers again
 
 
-MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math section
+MATH:															; JMP From: line-108 - Input tests pass  ---  Start Math section
 
 ; Add numA numB and store result in resAPlusB and Display		; A + B
 	mov		eax, numA
@@ -299,7 +299,7 @@ MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math sec
 	call	WriteInt
 	call	CrLf
 
-; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-313 or Restart JMP To: line-78
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-313 or Restart JMP To: line-79
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
@@ -310,7 +310,7 @@ MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math sec
 	jmp		START_LOOP
 	
 
-CONTINUE:														; JMP From: line-308 to finish
+CONTINUE:														; JMP From: line-309 to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
