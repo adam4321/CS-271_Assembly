@@ -1,16 +1,16 @@
-TITLE Program 1  -- Sums and Differences
+TITLE Program 1                 Program1_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-14-2020
+; Last Modified:				1-16-2020
 ; OSU email address:			wrighada@oregonstate.edu
-; Course number/section:		cs271--400
+; Course number/section:		cs271-400
 ; Project Number:               1  
 ; Due Date:						1-19-2020
 ; Description:					Assembly program which prompts the user for
 ;								three integers in descending order and then
 ;								calculates the sum and difference of the sets
-;								(A+B, A-B, A+C, A-C, B+C, B-C, A+B+C) and 
-;								displays it to the user
+;								(A+B, A-B, A+C, A-C, B+C, B-C, A+B+C, B-A, C-A, C-B, C-B-A)  
+;								and displays it to the user
 
 INCLUDE Irvine32.inc
 
@@ -32,9 +32,20 @@ addSym		BYTE	" + ", 0
 subSym		BYTE	" - ", 0
 eqlSym		BYTE	" = ", 0
 goodBye		BYTE	"Good-bye !!!", 0
-numA		SDWORD	?								; Integer A to be entered by user
-numB		SDWORD	?								; Integer B to be entered by user
-numC		SDWORD	?								; Integer C to be entered by user
+numA		SDWORD	?																					; Integer A to be entered by user
+numB		SDWORD	?																					; Integer B to be entered by user
+numC		SDWORD	?																					; Integer C to be entered by user
+resAPlusB	SDWORD	?																					; Result of A Plus B
+resAMinB	SDWORD	?																					; Result of A Minus B
+resAPlusC	SDWORD	?																					; Result of A Plus C
+resAMinC	SDWORD	?																					; Result of A Minus B
+resBPlusC	SDWORD	?																					; Result of B Plus C
+resBMinC	SDWORD	?																					; Result of B Minus C
+resABC		SDWORD	?																					; Result of A Plus B Plus C
+resBMinA	SDWORD	?																					; Result of B Minus A
+resCMinA	SDWORD	?																					; Result of C Minus A
+resCMinB	SDWORD	?																					; Result of C Minus B
+resCBA		SDWORD	?																					; Result of C Minus B Minus A
 
 
 ; Executable instructions
@@ -64,9 +75,9 @@ main PROC
 	call	CrLf
 
 
-START_LOOP:											; User can press 2 and continue with JMP From: line-271
+START_LOOP:														; User can press 2 and continue with JMP From: line-309
 
-; Prompt for first number							; Prompt for 3 numbers
+; Prompt for first number										; Prompt for 3 numbers
 	call	CrLf
 	mov		edx, OFFSET firPrompt
 	call	WriteString
@@ -86,7 +97,7 @@ START_LOOP:											; User can press 2 and continue with JMP From: line-271
 	mov		numC, eax
 	call	CrLf
 
-; Check for descending order						; Test for descending numbers
+; Check for descending order									; Test for descending numbers
 	mov		eax, numA
 	cmp		eax, numB
 	jbe		INPUT_ERROR
@@ -96,18 +107,18 @@ START_LOOP:											; User can press 2 and continue with JMP From: line-271
 	jmp		MATH
 
 
-INPUT_ERROR:										; JMP From: line-87 or 90
+INPUT_ERROR:													; JMP From: line-103 or 106 if the input numbers aren't in descending order
 
-; Error Message										; Input numbers error message
+; Error Message													; Input numbers error message
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
 	Jmp		START_LOOP
 
 
-MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
+MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math section
 
-; Add and print for A and B							; Calc and print A + B
+; Add numA numB and store result in resAPlusB and Display		; A + B
 	mov		eax, numA
 	call	WriteInt
 	mov		edx, OFFSET addSym
@@ -117,10 +128,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	mov		edx, OFFSET eqlSym
 	call	WriteString
 	add		eax, numA
+	mov		resAPlusB, eax
+	mov		eax, resAPlusB
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for A and B					; Calc and print A - B
+; Sub numA numB and store result in resAMinB and Display		; A - B
 	mov		eax, numA
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -131,10 +144,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numA
 	sub		eax, numB
+	mov		resAMinB, eax
+	mov		eax, resAMinB
 	call	WriteInt
 	call	CrLf
 
-; Add and print for A and C							; Calc and print A + C
+; Add numA numC and store result in resAPlusC and Display		; A + C
 	mov		eax, numA
 	call	WriteInt
 	mov		edx, OFFSET addSym
@@ -144,10 +159,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	mov		edx, OFFSET eqlSym
 	call	WriteString
 	add		eax, numA
+	mov		resAPlusC, eax
+	mov		eax, resAPlusC
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for A and C					; Calc and print A - C
+; Sub numA numC and store result in resAMinC and Display		; A - C
 	mov		eax, numA
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -158,10 +175,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numA
 	sub		eax, numC
+	mov		resAMinC, eax
+	mov		eax, resAMinC
 	call	WriteInt
 	call	CrLf
 
-; Add and print for B and C							; Calc and print B + C
+; Add numB numC and store result in resBPlusC and Display		; B + C
 	mov		eax, numB
 	call	WriteInt
 	mov		edx, OFFSET addSym
@@ -171,10 +190,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	mov		edx, OFFSET eqlSym
 	call	WriteString
 	add		eax, numB
+	mov		resBPlusC, eax
+	mov		eax, resBPlusC
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for B and C					; Calc and print B - C
+; Sub numB numC and store result in resBMinC and Display		; B - C
 	mov		eax, numB
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -185,10 +206,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numB
 	sub		eax, numC
+	mov		resBMinC, eax
+	mov		eax, resBMinC
 	call	WriteInt
 	call	CrLf
 
-; Add and print for A and B and C					; Calc and print A + B + C
+; Add numC resAPlusB store result in resABC and Display			; A + B + C
 	mov		eax, numA
 	call	WriteInt
 	mov		edx, OFFSET addSym
@@ -201,12 +224,13 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteInt
 	mov		edx, OFFSET eqlSym
 	call	WriteString
-	add		eax, numA
-	add		eax, numB
+	add		eax, resAPlusB
+	mov		resABC, eax
+	mov		eax, resABC
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for B and A					; Calc and print B - A
+; Sub numB numA and store result in resBMinA and Display		; B - A
 	mov		eax, numB
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -217,10 +241,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numB
 	sub		eax, numA
+	mov		resBMinA, eax
+	mov		eax, resBMinA
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for C and A					; Calc and print C - A
+; Sub numC numA and store result in resCMinA and Display		; C - A
 	mov		eax, numC
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -231,10 +257,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numC
 	sub		eax, numA
+	mov		resCMinA, eax
+	mov		eax, resCMinA
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for C and B					; Calc and print C - B
+; Sub numC numB and store result in resCMinB and Display		; C - B
 	mov		eax, numC
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -245,10 +273,12 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	call	WriteString
 	mov		eax, numC
 	sub		eax, numB
+	mov		resCMinB, eax
+	mov		eax, resCMinB
 	call	WriteInt
 	call	CrLf
 
-; Subtract and print for C and B and A				; Calc and print C - B - A
+; Sub numC resBMinA and store result in resCBA and Display		; C - B - A
 	mov		eax, numC
 	call	WriteInt
 	mov		edx, OFFSET subSym
@@ -262,12 +292,13 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	mov		edx, OFFSET eqlSym
 	call	WriteString
 	mov		eax, numC
-	sub		eax, numB
-	sub		eax, numA
+	sub		eax, resBMinA
+	mov		resCBA, eax
+	mov		eax, resCBA
 	call	WriteInt
 	call	CrLf
 
-; Prompt for quit									; Ask the user to quit
+; Prompt for quit												; Ask the user to quit or continue at line: 78
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
@@ -278,15 +309,14 @@ MATH:												; JMP From: line-91 - Input tests pass  ---  Start Math section
 	jmp		START_LOOP
 	
 
-CONTINUE:											; JMP From: line-270
+CONTINUE:														; JMP From: line-308
 
-; Say "Good-bye"									; Print the final message when 1 entered
+; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
 	mov		edx, OFFSET goodBye
 	call	WriteString
 	call	CrLf
-
-	exit											; exit to operating system
+	exit														; exit to operating system
 
 main ENDP
 
