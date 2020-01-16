@@ -58,7 +58,7 @@ main PROC
 	mov		edx, OFFSET intro
 	call	WriteString
 	call	CrLf
-    call    CrLf
+	call	CrLf
 	mov		edx, OFFSET extCred1
 	call	WriteString
 	call	CrLf
@@ -98,7 +98,7 @@ START_LOOP:														; User can press 2 and continue with JMP From: line-309
 	mov		numC, eax
 	call	CrLf
 
-; Check for descending order									; Test for descending numbers
+; Check for descending order									; Success JMP To: line-120 or Fail JMP To: line-111
 	mov		eax, numA
 	cmp		eax, numB
 	jbe		INPUT_ERROR
@@ -114,7 +114,7 @@ INPUT_ERROR:													; JMP From: line-103 or 106 if the input numbers aren't
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_LOOP
+	Jmp		START_LOOP											; JMP To: line-79
 
 
 MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math section
@@ -292,14 +292,14 @@ MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math sec
 	call	WriteInt
 	mov		edx, OFFSET eqlSym
 	call	WriteString
-	mov		eax, numC
-	sub		eax, resBMinA
+	mov		eax, resCMinB
+	sub		eax, numA
 	mov		resCBA, eax
 	mov		eax, resCBA
 	call	WriteInt
 	call	CrLf
 
-; Prompt for quit												; Ask the user to quit or continue at line: 78
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-313 or Restart JMP To: line-78
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
@@ -317,7 +317,7 @@ CONTINUE:														; JMP From: line-308
 	mov		edx, OFFSET goodBye
 	call	WriteString
 	call	CrLf
-	exit														; exit to operating system
+	exit														; Exit to operating system
 
 main ENDP
 
