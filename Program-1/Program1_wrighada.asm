@@ -110,11 +110,11 @@ START_LOOP:														; User can press 2 and continue with JMP From: line-309
 
 INPUT_ERROR:													; JMP From: line-103 or 106 if the input numbers aren't in descending order
 
-; Error Message													; Input numbers error message
+; Non-descending input numbers Error Message
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_LOOP											; JMP To: line-79
+	Jmp		START_LOOP											; After error message JMP To: line-79 to request numbers again
 
 
 MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math section
@@ -310,7 +310,7 @@ MATH:															; JMP From: line-107 - Input tests pass  ---  Start Math sec
 	jmp		START_LOOP
 	
 
-CONTINUE:														; JMP From: line-308
+CONTINUE:														; JMP From: line-308 to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
