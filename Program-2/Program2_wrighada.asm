@@ -1,10 +1,10 @@
 TITLE Program 2                 Program2_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-19-2020
+; Last Modified:				1-21-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
-; Project Number:               1  
+; Project Number:               2  
 ; Due Date:						1-26-2020
 ; Description:					Assembly program which 
 
@@ -14,32 +14,24 @@ INCLUDE Irvine32.inc
 ; Variable definitions
 
 .data
-intro		BYTE	"Adam Wright  --  Program-2 -- Fibonacci numbers", 0
-extCred1	BYTE	"**EC-1: Display the numbers in alligned columns", 0
-instrctMsg	BYTE	"Enter 3 numbers A > B > C, and I'll show you the sums and differences!", 0
-firPrompt	BYTE	"First number: ", 0
-secPrompt	BYTE	"Second number: ", 0
-thrdPrompt	BYTE	"Third number: ", 0
-errPrompt	BYTE	"Error: The numbers must be in descending order", 0
+intro		BYTE	"Program-2 -- Fibonacci sequence", 0
+programmer	BYTE	"Programmed by Adam Wright.", 0
+extCred1	BYTE	"**EC-1: Display the numbers in alligned columns.", 0
+userPrompt	BYTE	"What's your name? ", 0
+userGreet	BYTE	"Hello, ", 0
+instr1		BYTE	"Enter the number of Fibonacci terms to be displayed.", 0
+instr2		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
+fibPrompt	BYTE	"How many Fibonacci terms do you want? ", 0
+errPrompt	BYTE	"Out of range.  Enter a number in [1 .. 46]", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
-addSym		BYTE	" + ", 0
-subSym		BYTE	" - ", 0
-eqlSym		BYTE	" = ", 0
-goodBye		BYTE	"Good-bye !!!", 0
-numA		SDWORD	?																					; Integer A to be entered by user
-numB		SDWORD	?																					; Integer B to be entered by user
-numC		SDWORD	?																					; Integer C to be entered by user
-resAPlusB	SDWORD	?																					; Result of A Plus B
-resAMinB	SDWORD	?																					; Result of A Minus B
-resAPlusC	SDWORD	?																					; Result of A Plus C
-resAMinC	SDWORD	?																					; Result of A Minus B
-resBPlusC	SDWORD	?																					; Result of B Plus C
-resBMinC	SDWORD	?																					; Result of B Minus C
-resABC		SDWORD	?																					; Result of A Plus B Plus C
-resBMinA	SDWORD	?																					; Result of B Minus A
-resCMinA	SDWORD	?																					; Result of C Minus A
-resCMinB	SDWORD	?																					; Result of C Minus B
-resCBA		SDWORD	?																					; Result of C Minus B Minus A
+space		BYTE	"            ", 0
+periodSym	BYTE	".", 0
+byePrompt1	BYTE	"Results certified by Adam Wright.", 0
+byePrompt2	BYTE	"Good-bye, ", 0
+userName	BYTE	33 DUP(0)															; String variable holding user name
+fibCount	SDWORD	?																	; Integer which holds user entered Fibonacci terms count
+fibPrev		SDWORD	0																	; Integer which holds Fibonacci of n-1
+fibOut		SDWORD	1																	; Integer which holds the current output value n
 
 
 ; Executable instructions
@@ -52,242 +44,100 @@ main PROC
 	mov		edx, OFFSET intro
 	call	WriteString
 	call	CrLf
+	mov		edx, OFFSET programmer
+	call	WriteString
+	call	CrLf
 	call	CrLf
 	mov		edx, OFFSET extCred1
 	call	WriteString
 	call	CrLf
 	call	CrLf
 
+; Prompt for the user's name
+	mov		edx, OFFSET userPrompt
+	call	WriteString
+	mov		edx, OFFSET userName
+	mov		ecx, 32
+	call	ReadString
+
+; Greet the user
+	mov		edx, OFFSET userGreet
+	call	WriteString
+	mov		edx, OFFSET userName
+	call	WriteString
+	mov		edx, OFFSET	periodSym
+	call	WriteString
+	call	CrLf
+	call	CrLf
+
 ; Print the instructions
-	mov		edx, OFFSET instrctMsg
+	mov		edx, OFFSET instr1
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET instr2
 	call	WriteString
 	call	CrLf
 
 
-START_LOOP:														; User can press 2 and continue with JMP From: line-310
+START_FIB:														; User can press 2 and continue with JMP From: line-
 
-; Prompt for first number										; Prompt for 3 numbers
+; Prompt for number of Fibonacci terms							; Prompt for Fibonacci terms count
 	call	CrLf
-	mov		edx, OFFSET firPrompt
+	mov		edx, OFFSET fibPrompt
 	call	WriteString
 	call	ReadInt
-	mov		numA, eax
+	mov		fibCount, eax
 
-; Prompt for second number
-	mov		edx, OFFSET secPrompt
-	call	WriteString
-	call	ReadInt
-	mov		numB, eax
-
-; Prompt for third number
-	mov		edx, OFFSET thrdPrompt
-	call	WriteString
-	call	ReadInt
-	mov		numC, eax
-	call	CrLf
-
-; Check for descending order									; Success JMP To: line-120 or Fail JMP To: line-111
-	mov		eax, numA
-	cmp		eax, numB
-	jbe		INPUT_ERROR
-	mov		eax, numB
-	cmp		eax, numC
-	jbe		INPUT_ERROR
+; Error test for int between 1-46								; Success JMP To: line-107 or Fail JMP To: line-98
+	mov		eax, fibCount
+	cmp		eax, 1
+	jl		INPUT_ERROR
+	cmp		eax, 46
+	jg		INPUT_ERROR
 	jmp		MATH
 
 
-INPUT_ERROR:													; JMP From: line-104 or 107 if the input numbers aren't in descending order
+INPUT_ERROR:													; JMP From: line-93 or 95 if the input numbers aren't in descending order
 
 ; Non-descending input numbers Error Message
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_LOOP											; After error message JMP To: line-79 to request numbers again
+	Jmp		START_FIB											; After error message JMP To: line-81 to request numbers again
 
 
 MATH:															; JMP From: line-108 - Input tests pass  ---  Start Math section
 
-; Add numA numB and store result in resAPlusB and Display		; A + B
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET addSym
+; Print base case of fibCount = 1								; Fibonacci sequence from 1 - fibCount
+	call	CrLf
+	mov		fibPrev, 0
+	mov		fibOut, 1
+	mov		eax, fibOut
+	mov		ecx, fibCount
+	call	WriteDec
+
+
+FIB_LOOP:
+
+; Print space between terms
+	xor		edx, edx	
+	mov		edx, OFFSET space
 	call	WriteString
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	add		eax, numA
-	mov		resAPlusB, eax
-	mov		eax, resAPlusB
-	call	WriteInt
+
+
+; Loop for values above fibCopunt = 1
+	mov		eax, fibPrev
+	mov		ebx, fibOut
+	mov		fibPrev, ebx
+	add		eax, ebx
+	mov		fibOut, eax
+	call	WriteDec
+	cmp		ecx, fibCount
+	Loop	FIB_LOOP
 	call	CrLf
 
-; Sub numA numB and store result in resAMinB and Display		; A - B
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numA
-	sub		eax, numB
-	mov		resAMinB, eax
-	mov		eax, resAMinB
-	call	WriteInt
-	call	CrLf
 
-; Add numA numC and store result in resAPlusC and Display		; A + C
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET addSym
-	call	WriteString
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	add		eax, numA
-	mov		resAPlusC, eax
-	mov		eax, resAPlusC
-	call	WriteInt
-	call	CrLf
-
-; Sub numA numC and store result in resAMinC and Display		; A - C
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numA
-	sub		eax, numC
-	mov		resAMinC, eax
-	mov		eax, resAMinC
-	call	WriteInt
-	call	CrLf
-
-; Add numB numC and store result in resBPlusC and Display		; B + C
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET addSym
-	call	WriteString
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	add		eax, numB
-	mov		resBPlusC, eax
-	mov		eax, resBPlusC
-	call	WriteInt
-	call	CrLf
-
-; Sub numB numC and store result in resBMinC and Display		; B - C
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numB
-	sub		eax, numC
-	mov		resBMinC, eax
-	mov		eax, resBMinC
-	call	WriteInt
-	call	CrLf
-
-; Add numC resAPlusB store result in resABC and Display			; A + B + C
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET addSym
-	call	WriteString
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET addSym
-	call	WriteString
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	add		eax, resAPlusB
-	mov		resABC, eax
-	mov		eax, resABC
-	call	WriteInt
-	call	CrLf
-
-; Sub numB numA and store result in resBMinA and Display		; B - A
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numB
-	sub		eax, numA
-	mov		resBMinA, eax
-	mov		eax, resBMinA
-	call	WriteInt
-	call	CrLf
-
-; Sub numC numA and store result in resCMinA and Display		; C - A
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numC
-	sub		eax, numA
-	mov		resCMinA, eax
-	mov		eax, resCMinA
-	call	WriteInt
-	call	CrLf
-
-; Sub numC numB and store result in resCMinB and Display		; C - B
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, numC
-	sub		eax, numB
-	mov		resCMinB, eax
-	mov		eax, resCMinB
-	call	WriteInt
-	call	CrLf
-
-; Sub numC resBMinA and store result in resCBA and Display		; C - B - A
-	mov		eax, numC
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numB
-	call	WriteInt
-	mov		edx, OFFSET subSym
-	call	WriteString
-	mov		eax, numA
-	call	WriteInt
-	mov		edx, OFFSET eqlSym
-	call	WriteString
-	mov		eax, resCMinB
-	sub		eax, numA
-	mov		resCBA, eax
-	mov		eax, resCBA
-	call	WriteInt
-	call	CrLf
-
-; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-313 or Restart JMP To: line-79
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line- or Restart JMP To: line-79
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
@@ -295,14 +145,21 @@ MATH:															; JMP From: line-108 - Input tests pass  ---  Start Math sec
 	call	ReadInt
 	cmp		eax, 1
 	je		CONTINUE
-	jmp		START_LOOP
+	jmp		START_FIB
 	
 
-CONTINUE:														; JMP From: line-309 to finish
+CONTINUE:														; JMP From: line- to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
-	mov		edx, OFFSET goodBye
+	mov		edx, OFFSET byePrompt1
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET byePrompt2
+	call	WriteString
+	mov		edx, OFFSET userName
+	call	WriteString
+	mov		edx, OFFSET	periodSym
 	call	WriteString
 	call	CrLf
 	exit														; Exit to operating system
