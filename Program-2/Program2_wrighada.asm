@@ -14,7 +14,7 @@ INCLUDE Irvine32.inc
 ; Variable definitions
 
 .data
-intro		BYTE	"Adam Wright  --  Program-2 -- ", 0
+intro		BYTE	"Adam Wright  --  Program-2 -- Fibonacci numbers", 0
 extCred1	BYTE	"**EC-1: Display the numbers in alligned columns", 0
 instrctMsg	BYTE	"Enter 3 numbers A > B > C, and I'll show you the sums and differences!", 0
 firPrompt	BYTE	"First number: ", 0
@@ -54,12 +54,6 @@ main PROC
 	call	CrLf
 	call	CrLf
 	mov		edx, OFFSET extCred1
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET extCred2
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET extCred3
 	call	WriteString
 	call	CrLf
 	call	CrLf
