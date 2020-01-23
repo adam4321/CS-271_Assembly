@@ -1,7 +1,7 @@
 TITLE Program 2                 Program2_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-22-2020
+; Last Modified:				1-23-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               2  
@@ -18,7 +18,7 @@ INCLUDE Irvine32.inc
 
 LOWER_LIMIT = 1																			; Constant holding the lowest possbie value for fibCount
 UPPER_LIMIT = 46																		; Constant holding the highest possible value for fibCount
-SPACING = 9																				; Constant holding the ascii key code of a tab
+SPACING = 9																				; Constant holding the ascii key code for a tab
 
 ; Variable definitions
 
@@ -96,7 +96,7 @@ main PROC
 	call	CrLf
 
 
-START_FIB:														; User can press 2 and continue with JMP From: line-189
+START_FIB:														; User can press 2 and continue with JMP From: line-195
 
 ; Prompt for number of Fibonacci terms
 	call	CrLf
@@ -105,7 +105,7 @@ START_FIB:														; User can press 2 and continue with JMP From: line-189
 	call	ReadInt
 	mov		fibCount, eax
 
-; Error test for int between 1-46								; Success JMP To: line-119 or Fail JMP To: line-110
+; Error test for int between 1-46								; Success JMP To: line-126 or Fail JMP To: line-117
 	mov		eax, fibCount
 	cmp		eax, LOWER_LIMIT
 	jl		INPUT_ERROR
@@ -114,16 +114,16 @@ START_FIB:														; User can press 2 and continue with JMP From: line-189
 	jmp		MATH
 
 
-INPUT_ERROR:													; Input numbers not in range JMP From: line-93 or 95
+INPUT_ERROR:													; Input numbers not in range JMP From: line-111 or 113
 
 ; Error Message for num outside 1-46
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_FIB											; After error message JMP To: line-81 to request numbers again
+	Jmp		START_FIB											; After error message JMP To: line-99 to request numbers again
 
 
-MATH:															; JMP From: line-108 - Input tests pass  ---  Start Math section
+MATH:															; JMP From: line-114 - Input tests pass  ---  Start Math section
 
 ; Print base case of fibCount = 1
 	call	CrLf
@@ -136,21 +136,21 @@ MATH:															; JMP From: line-108 - Input tests pass  ---  Start Math sec
 	dec		ecx
 	call	WriteDec
 	cmp		fibCount, 1
-	je		QUIT												; JMP To: line-173 after base case of Fib = 1 to quit
+	je		QUIT												; Base case of fibCount = 1 to quit prompt JMP To: line-185
 
 
-FIB_LOOP:														; JMP From: line-161 to loop through Fib sequence
+FIB_LOOP:														; JMP From: line-172 to loop through Fib sequence
 
 ; Use spacing constant to format Fib output						; Print spacing between terms
 	mov		al, SPACING
 	call	WriteChar
 	call	WriteChar
-	cmp		rowCount, 7											; Only print 2 tabs for output rows 7 and above (formatting columns)
+	cmp		rowCount, 7											; Only print 2 tabs for rowCount 7+ (format columns)
 	jge		COL_FORMAT
-	call	WriteChar											; Print 3 tabs for output rows 0-6 (formatting columns)
+	call	WriteChar											; Print 3 tabs for rowCount 0-6 (format columns)
 
 
-COL_FORMAT:														; JMP From: line-139 for 2 tab rows 7 and above (formatting columns)
+COL_FORMAT:														; JMP From: line-149 for 2 tab rows 7 and above (formatting columns)
 
 ; Loop for values above fibCount = 1
 	mov		eax, fibPrev
@@ -163,7 +163,7 @@ COL_FORMAT:														; JMP From: line-139 for 2 tab rows 7 and above (format
 	je		NEW_LINE
 
 
-PRINT:															; JMP From: line-172 after newline added
+PRINT:															; JMP From: line-182 after newline added
 
 ; Print Fib term and loop until fibCount reached
 	mov		eax, fibOut
@@ -173,30 +173,29 @@ PRINT:															; JMP From: line-172 after newline added
 	jmp		QUIT
 
 
-NEW_LINE:														; JMP From: line-153 for newline
+NEW_LINE:														; JMP From: line-163 for newline
 
 ; Newline and incement rowcount and rezero colCount
 	call	CrLf
 	inc		[rowCount]
 	mov		colCount, 0
-	jmp		PRINT												; JMP To: line-156 to continue printing
+	jmp		PRINT												; JMP To: line-166 to continue printing
 
 
 QUIT:
 
-; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-189 or Restart JMP To: line-89
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-198 or Restart JMP To: line-99
 	call	CrLf
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
 	call	ReadInt
-	call	CrLf
 	cmp		eax, 1
 	je		FINISH
 	jmp		START_FIB
 	
 
-FINISH:															; JMP From: line-185 to finish
+FINISH:															; JMP From: line-194 to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
