@@ -6,7 +6,10 @@ TITLE Program 2                 Program2_wrighada.asm
 ; Course number/section:		cs271-400
 ; Project Number:               2  
 ; Due Date:						1-26-2020
-; Description:					Assembly program which 
+; Description:					Assembly program which prompts the user for their
+;								name and then greets them. It then asks for a
+;								number between 1-46 and then outputs the
+;								Fibonacci sequence for that number of terms.
 
 INCLUDE Irvine32.inc
 
