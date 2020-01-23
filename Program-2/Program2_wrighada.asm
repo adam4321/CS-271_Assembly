@@ -26,17 +26,19 @@ SPACING = 9																				; Constant holding the ascii key code of a tab
 intro		BYTE	"Program-2 -- Fibonacci Sequence", 0
 programmer	BYTE	"Programmed by Adam Wright", 0
 extCred1	BYTE	"**EC-1: Display the numbers in alligned columns.", 0
+extCred2	BYTE	"**EC-2: Program repeats until the user quits.", 0
 userPrompt	BYTE	"What's your name? ", 0
 userGreet	BYTE	"Hello, ", 0
-instr1		BYTE	"Enter the number of Fibonacci terms to be displayed.", 0
-instr2		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
+instr1		BYTE	"This program displays the Fibonacci sequence. ", 0
+instr2		BYTE	"Enter the number of terms to be displayed.", 0
+instr3		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
 fibPrompt	BYTE	"How many Fibonacci terms do you want? ", 0
 errPrompt	BYTE	"Out of range.  Enter a number in [1 .. 46]", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 bangSym		BYTE	"!", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye, ", 0
-userName	BYTE	33 DUP(0)															; String variable holding user name
+userName	BYTE	33 DUP(0)															; String variable holding user name 33 bytes initialized to 0
 fibCount	DWORD	?																	; Integer which holds user entered Fibonacci terms count
 fibPrev		DWORD	0																	; Integer which holds Fibonacci of n-1
 fibOut		DWORD	1																	; Integer which holds the current output value n
@@ -49,7 +51,7 @@ rowCount	DWORD	0																	; Integer holding the current printing row
 .code  
 main PROC
 
-; Introduce programmer, title, and extra credit options
+; Introduce title, programmer, and extra credit options
 	call	CrLf
 	mov		edx, OFFSET intro
 	call	WriteString
@@ -61,6 +63,9 @@ main PROC
 	mov		edx, OFFSET extCred1
 	call	WriteString
 	call	CrLf
+	mov		edx, OFFSET	extCred2
+	call	WriteString
+	call	CrLf
 	call	CrLf
 
 ; Prompt for the user's name
@@ -70,7 +75,7 @@ main PROC
 	mov		ecx, 32
 	call	ReadString
 
-; Greet the user
+; Greet the user using userName
 	mov		edx, OFFSET userGreet
 	call	WriteString
 	mov		edx, OFFSET userName
@@ -83,13 +88,15 @@ main PROC
 ; Print the instructions
 	mov		edx, OFFSET instr1
 	call	WriteString
-	call	CrLf
 	mov		edx, OFFSET instr2
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET instr3
 	call	WriteString
 	call	CrLf
 
 
-START_FIB:														; User can press 2 and continue with JMP From: line-186
+START_FIB:														; User can press 2 and continue with JMP From: line-189
 
 ; Prompt for number of Fibonacci terms
 	call	CrLf
@@ -98,7 +105,7 @@ START_FIB:														; User can press 2 and continue with JMP From: line-186
 	call	ReadInt
 	mov		fibCount, eax
 
-; Error test for int between 1-46								; Success JMP To: line-116 or Fail JMP To: line-107
+; Error test for int between 1-46								; Success JMP To: line-119 or Fail JMP To: line-110
 	mov		eax, fibCount
 	cmp		eax, LOWER_LIMIT
 	jl		INPUT_ERROR
