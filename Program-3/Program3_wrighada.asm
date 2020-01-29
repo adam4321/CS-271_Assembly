@@ -1,12 +1,16 @@
 TITLE Program 3                 Program3_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-27-2020
+; Last Modified:				1-28-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
 ; Due Date:						2-9-2020
-; Description:					Assembly program which 
+; Description:					Assembly program which prompts the user to enter
+;								numbers repeatedly within the ranges of 
+;								[-88, -55] or [-40, -1], and then terminates on
+;								a positive number and then displays the average
+;								rounded to the nearest integer.
 
 INCLUDE Irvine32.inc
 
@@ -17,17 +21,22 @@ LOWER_LIMIT = 1																			; Constant holding the lowest possbie value fo
 UPPER_LIMIT = 46																		; Constant holding the highest possible value for fibCount
 SPACING = 9																				; Constant holding the ascii key code for a tab
 
+LIMIT_NEG_88 = -88																			; Constant holding the lowest possbie value for fibCount
+LIMIT_NEG_55 = -55																			; Constant holding the highest possible value for fibCount
+LIMIT_NEG_40 = -40																			; Constant holding the ascii key code for a tab
+LIMIT_NEG_1 = -1
+
+
 ; Variable definitions
 
 .data
-intro		BYTE	"Program-3 -- Fibonacci Sequence", 0
+intro		BYTE	"Program-3 -- Average of negative numbers", 0
 programmer	BYTE	"Programmed by Adam Wright", 0
-extCred1	BYTE	"**EC-1: Display the numbers in alligned columns.", 0
-extCred2	BYTE	"**EC-2: Program repeats until the user quits.", 0
+extCred1	BYTE	"**EC-1: Number the lines during user input.", 0
 userPrompt	BYTE	"What's your name? ", 0
 userGreet	BYTE	"Hello, ", 0
-instr1		BYTE	"This program displays the Fibonacci sequence. ", 0
-instr2		BYTE	"Enter the number of terms to be displayed.", 0
+instr1		BYTE	"Please enter numbers in [-88, -55] or [-40, -1].", 0
+instr2		BYTE	"Enter a non-negative number when you are finished to see results.", 0
 instr3		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
 fibPrompt	BYTE	"How many Fibonacci terms do you want? ", 0
 errPrompt	BYTE	"Out of range.  Enter a number in [1 .. 46]", 0
@@ -60,9 +69,6 @@ main PROC
 	mov		edx, OFFSET extCred1
 	call	WriteString
 	call	CrLf
-	mov		edx, OFFSET	extCred2
-	call	WriteString
-	call	CrLf
 	call	CrLf
 
 ; Prompt for the user's name
@@ -85,10 +91,8 @@ main PROC
 ; Print the instructions
 	mov		edx, OFFSET instr1
 	call	WriteString
-	mov		edx, OFFSET instr2
-	call	WriteString
 	call	CrLf
-	mov		edx, OFFSET instr3
+	mov		edx, OFFSET instr2
 	call	WriteString
 	call	CrLf
 
