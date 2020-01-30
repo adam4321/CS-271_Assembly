@@ -34,10 +34,10 @@ userGreet	BYTE	"Hello, ", 0
 instr1		BYTE	"Please enter numbers in [-88, -55] or [-40, -1].", 0
 instr2		BYTE	"Enter a non-negative number ", 0
 instr3		BYTE	"when you are finished to see results.", 0
-numPrompt	BYTE	"Enter a number: ", 0
+numPrompt	BYTE	" - Enter a number: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
-validCnt1	BYTE	"You entered ", 0
-validCnt2	BYTE	" valid numbers.", 0
+validPmt1	BYTE	"You entered ", 0
+validPmt2	BYTE	" valid numbers.", 0
 maxPrompt	BYTE	"The maximum valid number is ", 0
 minPrompt	BYTE	"The minimum valid number is ", 0
 sumPrompt	BYTE	"The sum of your valid numbers is ", 0
@@ -48,12 +48,12 @@ space		BYTE	" ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye, ", 0
 userName	BYTE	33 DUP(0)														; String variable holding user name 33 bytes initialized to 0
-numInput	SDWORD	?																; sdf
-validCount	DWORD	0																; sdf
-numLowest	SDWORD	0																; Integer which holds Fibonacci of n-1
-numHighest	SDWORD	1																; Integer which holds the current output value n
-colCount	DWORD	0																; Integer holding the current column to print
-rowCount	DWORD	0																; Integer holding the current printing row
+numInput	SDWORD	?																; Signed integer holding the current input number
+validCount	DWORD	0																; Integer holding the number of valid inputs
+numLowest	SDWORD	-88																; Signed integer holding the lowest number entered
+numHighest	SDWORD	-1																; Signed integer holding the highest number entered
+numSum		SDWORD	?																; Signed integer holding the sum of the entered numbers
+numAvg		SDWORD	?																; Signed integer holding the average of the entered numbers
 
 
 ; Executable instructions
@@ -105,12 +105,15 @@ main PROC
 
 START_AVG:														; User can press 2 and continue with JMP From: line-
 
-; Prompt for number of Fibonacci terms
+; Prompt for a number from user
 	call	CrLf
+	mov		eax, validCount
+	call	WriteDec
 	mov		edx, OFFSET numPrompt
 	call	WriteString
 	call	ReadInt
 	mov		numInput, eax
+	jns		PRINT
 
 ; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line- or Fail JMP To: line-
 	mov		eax, numInput
@@ -118,16 +121,30 @@ START_AVG:														; User can press 2 and continue with JMP From: line-
 	jl		INPUT_ERROR
 	cmp		eax, LIMIT_NEG_1
 	jg		INPUT_ERROR
-;	cmp		eax, 
-;	jl		INPUT_ERROR
-;	cmp		eax,
-;	jg		INPUT_ERROR
+	cmp		eax, LIMIT_NEG_40
+	jl		LOWER_RANGE_TEST
+	cmp		eax, LIMIT_NEG_55
+	jg		HIGHER_RANGE_TEST
+	jmp		MATH
+
+LOWER_RANGE_TEST:												; Second test to remove -56 - -41
+	mov		eax, numInput
+	cmp		eax, LIMIT_NEG_55
+	jg		INPUT_ERROR
+	jmp		MATH
+
+
+HIGHER_RANGE_TEST:												; Second test to remove -56 - -41
+	mov		eax, numInput
+	cmp		eax, LIMIT_NEG_40
+	jl		INPUT_ERROR
 	jmp		MATH
 
 
 INPUT_ERROR:													; Input numbers not in range JMP From: line- or 
 
 ; Error Message for num outside [-88, -55] or [-40, -1]
+	call	CrLf
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
@@ -136,9 +153,19 @@ INPUT_ERROR:													; Input numbers not in range JMP From: line- or
 
 MATH:															; JMP From: line- - Input tests pass  ---  Start Math section
 
-; Print 
-	call	CrLf
+; Increment valid count and  
+	inc		validCount
 
+	jmp		START_AVG
+
+
+PRINT:
+
+; Print results if valid entries exist
+	mov		eax, validCount 
+	cmp		eax, 0
+	je		QUIT
+	mov		edx, OFFSET validPmt1
 
 
 QUIT:
