@@ -1,7 +1,7 @@
 TITLE Program 3                 Program3_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-29-2020
+; Last Modified:				1-30-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
@@ -50,10 +50,10 @@ byePrompt2	BYTE	"Good-bye, ", 0
 userName	BYTE	33 DUP(0)														; String variable holding user name 33 bytes initialized to 0
 numInput	SDWORD	?																; Signed integer holding the current input number
 validCount	DWORD	0																; Integer holding the number of valid inputs
-numLowest	SDWORD	-88																; Signed integer holding the lowest number entered
-numHighest	SDWORD	-1																; Signed integer holding the highest number entered
-numSum		SDWORD	?																; Signed integer holding the sum of the entered numbers
-numAvg		SDWORD	?																; Signed integer holding the average of the entered numbers
+numLowest	SDWORD	-1																; Signed integer holding the lowest number entered
+numHighest	SDWORD	-88																; Signed integer holding the highest number entered
+numSum		SDWORD	0																; Signed integer holding the sum of the entered numbers
+numAvg		SDWORD	0																; Signed integer holding the average of the entered numbers
 
 
 ; Executable instructions
@@ -155,8 +155,16 @@ MATH:															; JMP From: line- - Input tests pass  ---  Start Math sectio
 
 ; Increment valid count and  
 	inc		validCount
-
+	mov		eax, numInput
+	add		eax, numSum
+	mov		numSum, eax
 	jmp		START_AVG
+
+MAX_NUM:
+
+
+MIN_NUM:
+
 
 
 PRINT:
@@ -165,19 +173,36 @@ PRINT:
 	mov		eax, validCount 
 	cmp		eax, 0
 	je		QUIT
+	call	CrLf
 	mov		edx, OFFSET validPmt1
+	call	WriteString
+	mov		eax, validCount
+	call	WriteDec
+	mov		edx, OFFSET validPmt2
+	call	WriteString
+
+	call	CrLf
+	mov		edx, OFFSET sumPrompt
+	call	WriteString
+	mov		eax, numSum
+	call	WriteInt
+	call	CrLf
 
 
 QUIT:
 
 ; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line- or Restart JMP To: line-
 	call	CrLf
-	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
 	call	ReadInt
 	cmp		eax, 1
 	je		FINISH
+	mov		validCount, 0
+	mov		numSum, 0
+	mov		numAvg, 0
+	mov		numLowest, -1
+	mov		numHighest, -88
 	jmp		START_AVG
 	
 
