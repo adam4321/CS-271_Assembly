@@ -1,7 +1,7 @@
 TITLE Program 3                 Program3_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-28-2020
+; Last Modified:				1-29-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
@@ -17,14 +17,10 @@ INCLUDE Irvine32.inc
 
 ; Constant definitions
 
-LOWER_LIMIT = 1																			; Constant holding the lowest possbie value for fibCount
-UPPER_LIMIT = 46																		; Constant holding the highest possible value for fibCount
-SPACING = 9																				; Constant holding the ascii key code for a tab
-
-LIMIT_NEG_88 = -88																			; Constant holding the lowest possbie value for fibCount
-LIMIT_NEG_55 = -55																			; Constant holding the highest possible value for fibCount
-LIMIT_NEG_40 = -40																			; Constant holding the ascii key code for a tab
-LIMIT_NEG_1 = -1
+LIMIT_NEG_88 = -88																	; Constant holding the lowest possbie value for input
+LIMIT_NEG_55 = -55																	; Constant holding the highest possible value for lower range
+LIMIT_NEG_40 = -40																	; Constant holding the lowest possible value for higher range
+LIMIT_NEG_1 = -1																	; Constant holding the highest possible value for input
 
 
 ; Variable definitions
@@ -36,20 +32,28 @@ extCred1	BYTE	"**EC-1: Number the lines during user input.", 0
 userPrompt	BYTE	"What's your name? ", 0
 userGreet	BYTE	"Hello, ", 0
 instr1		BYTE	"Please enter numbers in [-88, -55] or [-40, -1].", 0
-instr2		BYTE	"Enter a non-negative number when you are finished to see results.", 0
-instr3		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
-fibPrompt	BYTE	"How many Fibonacci terms do you want? ", 0
-errPrompt	BYTE	"Out of range.  Enter a number in [1 .. 46]", 0
+instr2		BYTE	"Enter a non-negative number ", 0
+instr3		BYTE	"when you are finished to see results.", 0
+numPrompt	BYTE	"Enter a number: ", 0
+errPrompt	BYTE	"Number Invalid!", 0
+validCnt1	BYTE	"You entered ", 0
+validCnt2	BYTE	" valid numbers.", 0
+maxPrompt	BYTE	"The maximum valid number is ", 0
+minPrompt	BYTE	"The minimum valid number is ", 0
+sumPrompt	BYTE	"The sum of your valid numbers is ", 0
+avgPrompt	BYTE	"The rounded average is ", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 bangSym		BYTE	"!", 0
+space		BYTE	" ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye, ", 0
-userName	BYTE	33 DUP(0)															; String variable holding user name 33 bytes initialized to 0
-fibCount	DWORD	?																	; Integer which holds user entered Fibonacci terms count
-fibPrev		DWORD	0																	; Integer which holds Fibonacci of n-1
-fibOut		DWORD	1																	; Integer which holds the current output value n
-colCount	DWORD	0																	; Integer holding the current column to print
-rowCount	DWORD	0																	; Integer holding the current printing row
+userName	BYTE	33 DUP(0)														; String variable holding user name 33 bytes initialized to 0
+numInput	SDWORD	?																; sdf
+validCount	DWORD	0																; sdf
+numLowest	SDWORD	0																; Integer which holds Fibonacci of n-1
+numHighest	SDWORD	1																; Integer which holds the current output value n
+colCount	DWORD	0																; Integer holding the current column to print
+rowCount	DWORD	0																; Integer holding the current printing row
 
 
 ; Executable instructions
@@ -94,98 +98,52 @@ main PROC
 	call	CrLf
 	mov		edx, OFFSET instr2
 	call	WriteString
+	mov		edx, OFFSET instr3
+	call	WriteString
 	call	CrLf
 
 
-START_FIB:														; User can press 2 and continue with JMP From: line-195
+START_AVG:														; User can press 2 and continue with JMP From: line-
 
 ; Prompt for number of Fibonacci terms
 	call	CrLf
-	mov		edx, OFFSET fibPrompt
+	mov		edx, OFFSET numPrompt
 	call	WriteString
 	call	ReadInt
-	mov		fibCount, eax
+	mov		numInput, eax
 
-; Error test for int between 1-46								; Success JMP To: line-126 or Fail JMP To: line-117
-	mov		eax, fibCount
-	cmp		eax, LOWER_LIMIT
+; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line- or Fail JMP To: line-
+	mov		eax, numInput
+	cmp		eax, LIMIT_NEG_88
 	jl		INPUT_ERROR
-	cmp		eax, UPPER_LIMIT
+	cmp		eax, LIMIT_NEG_1
 	jg		INPUT_ERROR
+;	cmp		eax, 
+;	jl		INPUT_ERROR
+;	cmp		eax,
+;	jg		INPUT_ERROR
 	jmp		MATH
 
 
-INPUT_ERROR:													; Input numbers not in range JMP From: line-111 or 113
+INPUT_ERROR:													; Input numbers not in range JMP From: line- or 
 
-; Error Message for num outside 1-46
+; Error Message for num outside [-88, -55] or [-40, -1]
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_FIB											; After error message JMP To: line-99 to request numbers again
+	Jmp		START_AVG											; After error message JMP To: line- to request numbers again
 
 
-MATH:															; JMP From: line-114 - Input tests pass  ---  Start Math section
+MATH:															; JMP From: line- - Input tests pass  ---  Start Math section
 
-; Print base case of fibCount = 1
+; Print 
 	call	CrLf
-	mov		fibPrev, 0
-	mov		fibOut, 1
-	mov		eax, fibOut
-	mov		ecx, fibCount
-	mov		[colCount], 0
-	mov		[rowCount], 0
-	dec		ecx
-	call	WriteDec
-	cmp		fibCount, 1
-	je		QUIT												; Base case of fibCount = 1 to quit prompt JMP To: line-185
 
-
-FIB_LOOP:														; JMP From: line-172 to loop through Fib sequence
-
-; Use spacing constant to format Fib output						; Print spacing between terms
-	mov		al, SPACING
-	call	WriteChar
-	call	WriteChar
-	cmp		rowCount, 7											; Only print 2 tabs for rowCount 7+ (format columns)
-	jge		COL_FORMAT
-	call	WriteChar											; Print 3 tabs for rowCount 0-6 (format columns)
-
-
-COL_FORMAT:														; JMP From: line-149 for 2 tab rows 7 and above (formatting columns)
-
-; Loop for values above fibCount = 1
-	mov		eax, fibPrev
-	mov		ebx, fibOut
-	mov		fibPrev, ebx
-	add		eax, ebx
-	mov		fibOut, eax
-	inc		[colCount]
-	cmp		colCount, 5
-	je		NEW_LINE
-
-
-PRINT:															; JMP From: line-182 after newline added
-
-; Print Fib term and loop until fibCount reached
-	mov		eax, fibOut
-	call	WriteDec
-	cmp		ecx, fibCount
-	Loop	FIB_LOOP
-	jmp		QUIT
-
-
-NEW_LINE:														; JMP From: line-163 for newline
-
-; Newline and incement rowcount and rezero colCount
-	call	CrLf
-	inc		[rowCount]
-	mov		colCount, 0
-	jmp		PRINT												; JMP To: line-166 to continue printing
 
 
 QUIT:
 
-; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-198 or Restart JMP To: line-99
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line- or Restart JMP To: line-
 	call	CrLf
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
@@ -193,10 +151,10 @@ QUIT:
 	call	ReadInt
 	cmp		eax, 1
 	je		FINISH
-	jmp		START_FIB
+	jmp		START_AVG
 	
 
-FINISH:															; JMP From: line-194 to finish
+FINISH:															; JMP From: line- to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
