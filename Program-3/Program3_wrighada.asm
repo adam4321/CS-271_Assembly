@@ -153,26 +153,44 @@ INPUT_ERROR:													; Input numbers not in range JMP From: line- or
 
 MATH:															; JMP From: line- - Input tests pass  ---  Start Math section
 
-; Increment valid count and  
+; Increment valid count and create sum
 	inc		validCount
 	mov		eax, numInput
 	add		eax, numSum
 	mov		numSum, eax
-	jmp		START_AVG
 
-MAX_NUM:
+; Process highest and lowest numbers
+	mov		eax, numInput
+	cmp		eax, numLowest
+	jl		MIN_NUM
+	cmp		eax, numHighest
+	jg		MAX_NUM
+
+
+CONTINUE_MATH:
+
+	jmp		START_AVG
 
 
 MIN_NUM:
+	mov		numLowest, eax
+	jmp		CONTINUE_MATH
+
+
+MAX_NUM:
+	mov		numHighest, eax
+	jmp		CONTINUE_MATH
 
 
 
 PRINT:
 
-; Print results if valid entries exist
+; If exit before any entries
 	mov		eax, validCount 
 	cmp		eax, 0
 	je		QUIT
+
+; Print the number of valid numbers
 	call	CrLf
 	mov		edx, OFFSET validPmt1
 	call	WriteString
@@ -181,6 +199,21 @@ PRINT:
 	mov		edx, OFFSET validPmt2
 	call	WriteString
 
+; Print the lowest number
+	call	CrLf
+	mov		edx, OFFSET minPrompt
+	call	WriteString
+	mov		eax, numLowest
+	call	WriteInt
+
+; Print the highest number
+	call	CrLf
+	mov		edx, OFFSET maxPrompt
+	call	WriteString
+	mov		eax, numHighest
+	call	WriteInt
+
+; Print the sum valid numbers
 	call	CrLf
 	mov		edx, OFFSET sumPrompt
 	call	WriteString
@@ -198,11 +231,13 @@ QUIT:
 	call	ReadInt
 	cmp		eax, 1
 	je		FINISH
+
+; If restarting then variables are reset
 	mov		validCount, 0
 	mov		numSum, 0
 	mov		numAvg, 0
-	mov		numLowest, -1
-	mov		numHighest, -88
+	mov		numLowest, LIMIT_NEG_1
+	mov		numHighest, LIMIT_NEG_88
 	jmp		START_AVG
 	
 
