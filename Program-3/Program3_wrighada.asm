@@ -103,7 +103,7 @@ main PROC
 	call	CrLf
 
 
-START_AVG:														; User can press 2 and continue with JMP From: line-
+MAIN_LOOP:														; User can press 2 and continue with JMP From: line-
 
 ; Prompt for a number from user
 	call	CrLf
@@ -148,7 +148,7 @@ INPUT_ERROR:													; Input numbers not in range JMP From: line- or
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		START_AVG											; After error message JMP To: line- to request numbers again
+	Jmp		MAIN_LOOP											; After error message JMP To: line- to request numbers again
 
 
 MATH:															; JMP From: line- - Input tests pass  ---  Start Math section
@@ -169,7 +169,13 @@ MATH:															; JMP From: line- - Input tests pass  ---  Start Math sectio
 
 CONTINUE_MATH:
 
-	jmp		START_AVG
+; Process the average of the numbers
+	mov		eax, numSum
+	cdq
+	mov		ebx, validCount
+	idiv	ebx
+	mov		numAvg, eax
+	jmp		MAIN_LOOP
 
 
 MIN_NUM:
@@ -180,7 +186,6 @@ MIN_NUM:
 MAX_NUM:
 	mov		numHighest, eax
 	jmp		CONTINUE_MATH
-
 
 
 PRINT:
@@ -219,6 +224,13 @@ PRINT:
 	call	WriteString
 	mov		eax, numSum
 	call	WriteInt
+
+; Print the average of numbers
+	call	CrLf
+	mov		edx, OFFSET avgPrompt
+	call	WriteString
+	mov		eax, numAvg
+	call	WriteInt
 	call	CrLf
 
 
@@ -238,7 +250,7 @@ QUIT:
 	mov		numAvg, 0
 	mov		numLowest, LIMIT_NEG_1
 	mov		numHighest, LIMIT_NEG_88
-	jmp		START_AVG
+	jmp		MAIN_LOOP
 	
 
 FINISH:															; JMP From: line- to finish
