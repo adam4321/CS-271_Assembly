@@ -36,6 +36,7 @@ instr2		BYTE	"Enter a non-negative number ", 0
 instr3		BYTE	"when you are finished to see results.", 0
 numPrompt	BYTE	" - Enter a number: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
+noPrompt	BYTE	"No numbers entered!", 0
 validPmt1	BYTE	"You entered ", 0
 validPmt2	BYTE	" valid numbers.", 0
 maxPrompt	BYTE	"The maximum valid number is ", 0
@@ -113,7 +114,7 @@ MAIN_LOOP:														; User can press 2 and continue with JMP From: line-
 	call	WriteString
 	call	ReadInt
 	mov		numInput, eax
-	jns		PRINT
+	jns		NO_PRINT											; Non-negative integer JMP To: line-
 
 ; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line- or Fail JMP To: line-
 	mov		eax, numInput
@@ -127,14 +128,14 @@ MAIN_LOOP:														; User can press 2 and continue with JMP From: line-
 	jg		HIGHER_RANGE_TEST
 	jmp		MATH
 
-LOWER_RANGE_TEST:												; Second test to remove -56 - -41
+LOWER_RANGE_TEST:												; Second test to invalidate (-56 -> -41)
 	mov		eax, numInput
 	cmp		eax, LIMIT_NEG_55
 	jg		INPUT_ERROR
 	jmp		MATH
 
 
-HIGHER_RANGE_TEST:												; Second test to remove -56 - -41
+HIGHER_RANGE_TEST:												; Second test to invalidate (-56 -> -41)
 	mov		eax, numInput
 	cmp		eax, LIMIT_NEG_40
 	jl		INPUT_ERROR
@@ -162,9 +163,9 @@ MATH:															; JMP From: line- - Input tests pass  ---  Start Math sectio
 ; Process highest and lowest numbers
 	mov		eax, numInput
 	cmp		eax, numLowest
-	jl		MIN_NUM
+	jl		MIN_NUM												; New min detected JMP To: line-
 	cmp		eax, numHighest
-	jg		MAX_NUM
+	jg		MAX_NUM												; New max detected JMP To: line-
 
 
 CONTINUE_MATH:
@@ -174,26 +175,50 @@ CONTINUE_MATH:
 	cdq
 	mov		ebx, validCount
 	idiv	ebx
+;	cmp		edx, 0.50
+	jg		ROUND_UP
+
+
+RETURN_ROUND:
+
 	mov		numAvg, eax
-	jmp		MAIN_LOOP
+	jmp		MAIN_LOOP											; Request the next number JMP To: line-
 
 
 MIN_NUM:
+
+; Swap current number to lowest entered value
 	mov		numLowest, eax
-	jmp		CONTINUE_MATH
+	jmp		CONTINUE_MATH										; Return to processing
 
 
 MAX_NUM:
+
+; Swap current number to highest entered value
 	mov		numHighest, eax
 	jmp		CONTINUE_MATH
 
 
-PRINT:
+ROUND_UP:
 
-; If exit before any entries
+; Round up .51 remainder
+;	dec		eax
+	jmp		RETURN_ROUND
+
+
+NO_PRINT:
+
+; If end before any entries
 	mov		eax, validCount 
 	cmp		eax, 0
-	je		QUIT
+	jg		PRINT												; Valid entries JMP To: line-
+	mov		edx, OFFSET noPrompt
+	call	WriteString
+	call	CrLf
+	jmp		QUIT												; No valid input JMP To: line-
+
+
+PRINT: 
 
 ; Print the number of valid numbers
 	call	CrLf
