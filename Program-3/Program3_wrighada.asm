@@ -1,7 +1,7 @@
 TITLE Program 3                 Program3_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				1-30-2020
+; Last Modified:				1-31-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
@@ -160,10 +160,15 @@ MATH:															; JMP From: line- - Input tests pass  ---  Start Math sectio
 	add		eax, numSum
 	mov		numSum, eax
 
-; Process highest and lowest numbers
+; Process lowest number
 	mov		eax, numInput
 	cmp		eax, numLowest
 	jl		MIN_NUM												; New min detected JMP To: line-
+
+
+MATH_HI_CHK:
+
+; Process highest number
 	cmp		eax, numHighest
 	jg		MAX_NUM												; New max detected JMP To: line-
 
@@ -175,13 +180,17 @@ CONTINUE_MATH:
 	cdq
 	mov		ebx, validCount
 	idiv	ebx
-;	cmp		edx, 0.50
-	jg		ROUND_UP
+	mov		numAvg, eax
+
+; Quotient / 2 and compared to remainder
+	shr		ebx, 1
+	neg		edx
+	cmp		edx, ebx
+ 	jg		ROUND_UP											; Remainder > .5 JMP To: line- 
 
 
 RETURN_ROUND:
-
-	mov		numAvg, eax
+; Current rounded avg created
 	jmp		MAIN_LOOP											; Request the next number JMP To: line-
 
 
@@ -189,7 +198,7 @@ MIN_NUM:
 
 ; Swap current number to lowest entered value
 	mov		numLowest, eax
-	jmp		CONTINUE_MATH										; Return to processing
+	jmp		MATH_HI_CHK											; Return to processing
 
 
 MAX_NUM:
@@ -201,8 +210,8 @@ MAX_NUM:
 
 ROUND_UP:
 
-; Round up .51 remainder
-;	dec		eax
+; Round up > 0.5 remainder
+	dec		numAvg
 	jmp		RETURN_ROUND
 
 
@@ -212,6 +221,7 @@ NO_PRINT:
 	mov		eax, validCount 
 	cmp		eax, 0
 	jg		PRINT												; Valid entries JMP To: line-
+	call	CrLf
 	mov		edx, OFFSET noPrompt
 	call	WriteString
 	call	CrLf
@@ -265,6 +275,7 @@ QUIT:
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
+
 	call	ReadInt
 	cmp		eax, 1
 	je		FINISH
