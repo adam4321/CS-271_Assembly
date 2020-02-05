@@ -1,7 +1,7 @@
 TITLE Program 3                 Program3_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-1-2020
+; Last Modified:				2-5-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
@@ -10,7 +10,8 @@ TITLE Program 3                 Program3_wrighada.asm
 ;								numbers repeatedly within the ranges of 
 ;								[-88, -55] or [-40, -1], and then terminates on
 ;								a positive number and then displays the average
-;								rounded to the nearest integer.
+;								rounded to the nearest integer, sum, and lowest
+;								and highest values.
 
 
 INCLUDE Irvine32.inc
@@ -105,7 +106,7 @@ main PROC
 	call	CrLf
 
 
-MAIN_LOOP:														; User can press 2 and continue with JMP From: line-294
+MAIN_LOOP:														; User can press 2 and continue with JMP From: line-295
 
 ; Prompt for a number from user
 	call	CrLf
@@ -115,9 +116,9 @@ MAIN_LOOP:														; User can press 2 and continue with JMP From: line-294
 	call	WriteString
 	call	ReadInt
 	mov		numInput, eax
-	jns		NO_PRINT											; Non-negative integer JMP To: line-224
+	jns		NO_PRINT											; Detect lack of negative Flag (Positive Int) JMP To: line-225
 
-; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line-161 or Fail JMP To: line-151
+; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line-162 or Fail JMP To: line-152
 	mov		eax, numInput
 	cmp		eax, LIMIT_NEG_88
 	jl		INPUT_ERROR
@@ -148,17 +149,17 @@ HIGHER_RANGE_TEST:
 	jmp		MATH
 
 
-INPUT_ERROR:													; Input numbers not in range JMP From: line-123,125,138,147 
+INPUT_ERROR:													; Input numbers not in range JMP From: line-124,126,139,148 
 
 ; Error Message for num outside [-88, -55] or [-40, -1]
 	call	CrLf
 	mov		edx, OFFSET	errPrompt
 	call	WriteString
 	call	CrLf
-	Jmp		MAIN_LOOP											; After error message JMP To: line-108 to request numbers again
+	Jmp		MAIN_LOOP											; After error message JMP To: line-109 to request numbers again
 
 
-MATH:															; JMP From: line-130,139,148 - Input tests pass  ---  Start Math section
+MATH:															; JMP From: line-131,140,149 - Input tests pass  ---  Start Math section
 
 ; Increment valid count and create sum
 	inc		validCount
@@ -169,14 +170,14 @@ MATH:															; JMP From: line-130,139,148 - Input tests pass  ---  Start 
 ; Process lowest number
 	mov		eax, numInput
 	cmp		eax, numLowest
-	jl		MIN_NUM												; New min detected JMP To: line-203
+	jl		MIN_NUM												; New min detected JMP To: line-204
 
 
 MATH_HI_CHK:
 
 ; Process highest number
 	cmp		eax, numHighest
-	jg		MAX_NUM												; New max detected JMP To: line-210
+	jg		MAX_NUM												; New max detected JMP To: line-211
 
 
 CONTINUE_MATH:
@@ -192,26 +193,26 @@ CONTINUE_MATH:
 	shr		ebx, 1
 	neg		edx
 	cmp		edx, ebx
- 	jg		ROUND_UP											; Remainder > .5 JMP To: line-217
+ 	jg		ROUND_UP											; Remainder > .5 JMP To: line-218
 
 
 RETURN_ROUND:
 ; Current rounded avg created
-	jmp		MAIN_LOOP											; Request the next number JMP To: line-108
+	jmp		MAIN_LOOP											; Request the next number JMP To: line-109
 
 
 MIN_NUM:
 
 ; Swap current number to lowest entered value
 	mov		numLowest, eax
-	jmp		MATH_HI_CHK											; Return to processing JMP To: line-175
+	jmp		MATH_HI_CHK											; Return to processing JMP To: line-176
 
 
 MAX_NUM:
 
 ; Swap current number to highest entered value
 	mov		numHighest, eax
-	jmp		CONTINUE_MATH										; Return to processing JMP To: line-182
+	jmp		CONTINUE_MATH										; Return to processing JMP To: line-183
 
 
 ROUND_UP:
@@ -221,17 +222,17 @@ ROUND_UP:
 	jmp		RETURN_ROUND
 
 
-NO_PRINT:														; Test for any valid entries JMP From: line-118
+NO_PRINT:														; Test for any valid entries JMP From: line-119
 
 ; If end before any entries
 	mov		eax, validCount 
 	cmp		eax, 0
-	jg		PRINT												; Valid entries JMP To: line-232
+	jg		PRINT												; Valid entries JMP To: line-233
 	call	CrLf
 	mov		edx, OFFSET noPrompt
 	call	WriteString
 	call	CrLf
-	jmp		QUIT												; No valid input JMP To: line-273
+	jmp		QUIT												; No valid input JMP To: line-274
 
 
 PRINT: 
@@ -277,7 +278,7 @@ PRINT:
 
 QUIT:
 
-; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-292 or Restart JMP To: line-108
+; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-293 or Restart JMP To: line-109
 	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
@@ -294,7 +295,7 @@ QUIT:
 	jmp		MAIN_LOOP
 	
 
-FINISH:															; JMP From: line-282 to finish
+FINISH:															; JMP From: line-283 to finish
 
 ; Say "Good-bye"												; Print the final message when 1 entered
 	call	CrLf
