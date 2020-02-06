@@ -1,16 +1,15 @@
 TITLE Program 4                 Program4_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-4-2020
+; Last Modified:				2-5-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               3  
 ; Due Date:						2-16-2020
 ; Description:					Assembly program which prompts the user to enter
-;								numbers repeatedly within the ranges of 
-;								[-88, -55] or [-40, -1], and then terminates on
-;								a positive number and then displays the average
-;								rounded to the nearest integer.
+;								the amount of composite numbers to be displayed
+;								in the range of 1-400 and then calculates and 
+;								displays the numbers.
 
 
 INCLUDE Irvine32.inc
@@ -22,6 +21,9 @@ LIMIT_NEG_88 = -88																	; Constant holding the lowest possbie value f
 LIMIT_NEG_55 = -55																	; Constant holding the highest possible value for lower range
 LIMIT_NEG_40 = -40																	; Constant holding the lowest possible value for higher range
 LIMIT_NEG_1 = -1																	; Constant holding the highest possible value for input
+
+MIN_NUM = 1																			; Constant holding the lowest possbie value for input
+MAX_NUM = 400																		; Constant holding the highest possible value for input
 
 
 ; Variable definitions
@@ -292,11 +294,81 @@ QUIT:
 	mov		numLowest, LIMIT_NEG_1
 	mov		numHighest, LIMIT_NEG_88
 	jmp		MAIN_LOOP
-	
 
-FINISH:															; JMP From: line-282 to finish
+; Function that says "Good-bye"	
+	call	finish
 
-; Say "Good-bye"												; Print the final message when 1 entered
+; Exit to operating system
+	exit							
+
+main ENDP
+
+
+; Procedure definitions
+
+;------------------------------------------------------------
+; intro
+;
+; Prints the Introductory message
+;------------------------------------------------------------
+
+introduction PROC
+
+; Introduce title, programmer, and extra credit options
+	call	CrLf
+	mov		edx, OFFSET intro
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET programmer
+	call	WriteString
+	call	CrLf
+	call	CrLf
+	mov		edx, OFFSET extCred1
+	call	WriteString
+	call	CrLf
+	call	CrLf
+
+; Prompt for the user's name
+	mov		edx, OFFSET userPrompt
+	call	WriteString
+	mov		edx, OFFSET userName
+	mov		ecx, 32
+	call	ReadString
+
+; Greet the user using userName
+	mov		edx, OFFSET userGreet
+	call	WriteString
+	mov		edx, OFFSET userName
+	call	WriteString
+	mov		edx, OFFSET	bangSym
+	call	WriteString
+	call	CrLf
+	call	CrLf
+
+; Print the instructions
+	mov		edx, OFFSET instr1
+	call	WriteString
+	call	CrLf
+	mov		edx, OFFSET instr2
+	call	WriteString
+	mov		edx, OFFSET instr3
+	call	WriteString
+	call	CrLf
+
+	ret
+
+introduction ENDP
+
+
+;------------------------------------------------------------
+; finish
+;
+; Prints the Goodbye message
+;------------------------------------------------------------
+
+finish PROC															
+
+; Say "Good-bye""
 	call	CrLf
 	mov		edx, OFFSET byePrompt1
 	call	WriteString
@@ -308,8 +380,10 @@ FINISH:															; JMP From: line-282 to finish
 	mov		edx, OFFSET	bangSym
 	call	WriteString
 	call	CrLf
-	exit														; Exit to operating system
 
-main ENDP
+	ret
+
+finish ENDP
+
 
 END main
