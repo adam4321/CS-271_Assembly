@@ -321,6 +321,49 @@ introduction PROC
 
 introduction ENDP
 
+;------------------------------------------------------------
+; getUserData
+;
+; Gets the number of composites to be displayed
+;------------------------------------------------------------
+
+getUserData PROC
+
+getUserData ENDP
+
+
+;------------------------------------------------------------
+; validate
+;
+; Validates the user's entered value to be in range 1-400
+;------------------------------------------------------------
+
+validate PROC
+
+validate ENDP
+
+
+;------------------------------------------------------------
+; showComposites
+;
+; Prints the composite numbers for the selected range
+;------------------------------------------------------------
+
+showComposites PROC
+
+showComposites ENDP
+
+
+;------------------------------------------------------------
+; isComposite
+;
+; Determines if a value is a composite number
+;------------------------------------------------------------
+
+isComposite PROC
+
+isComposite ENDP
+
 
 ;------------------------------------------------------------
 ; finish
