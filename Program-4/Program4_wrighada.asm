@@ -22,8 +22,8 @@ LIMIT_NEG_55 = -55																	; Constant holding the highest possible value
 LIMIT_NEG_40 = -40																	; Constant holding the lowest possible value for higher range
 LIMIT_NEG_1 = -1																	; Constant holding the highest possible value for input
 
-MIN_NUM = 1																			; Constant holding the lowest possbie value for input
-MAX_NUM = 400																		; Constant holding the highest possible value for input
+; MIN_NUM = 1																			; Constant holding the lowest possbie value for input
+; MAX_NUM = 400																		; Constant holding the highest possible value for input
 
 
 ; Variable definitions
@@ -66,45 +66,7 @@ numAvg		SDWORD	0																; Signed integer holding the average of the ente
 main PROC
 
 ; Introduce title, programmer, and extra credit options
-	call	CrLf
-	mov		edx, OFFSET intro
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET programmer
-	call	WriteString
-	call	CrLf
-	call	CrLf
-	mov		edx, OFFSET extCred1
-	call	WriteString
-	call	CrLf
-	call	CrLf
-
-; Prompt for the user's name
-	mov		edx, OFFSET userPrompt
-	call	WriteString
-	mov		edx, OFFSET userName
-	mov		ecx, 32
-	call	ReadString
-
-; Greet the user using userName
-	mov		edx, OFFSET userGreet
-	call	WriteString
-	mov		edx, OFFSET userName
-	call	WriteString
-	mov		edx, OFFSET	bangSym
-	call	WriteString
-	call	CrLf
-	call	CrLf
-
-; Print the instructions
-	mov		edx, OFFSET instr1
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET instr2
-	call	WriteString
-	mov		edx, OFFSET instr3
-	call	WriteString
-	call	CrLf
+	call	introduction
 
 
 MAIN_LOOP:														; User can press 2 and continue with JMP From: line-294
@@ -307,7 +269,7 @@ main ENDP
 ; Procedure definitions
 
 ;------------------------------------------------------------
-; intro
+; introduction
 ;
 ; Prints the Introductory message
 ;------------------------------------------------------------
