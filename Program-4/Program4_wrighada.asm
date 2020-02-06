@@ -36,13 +36,13 @@ instr3		BYTE	"I can print up to 400 composites.", 0
 numPrompt	BYTE	"Enter the number of composites to display [1 .. 400]: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
-bangSym		BYTE	"!", 0
 space		BYTE	" ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye!", 0
-quit_val	DWORD	1																; Integer holding 1 to quit or any other value to continue
+quitVal	DWORD	1																	; Integer holding 1 to quit or any other value to continue
+numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range
 numInput	DWORD	?																; Integer holding the current input number
-print_val	DWORD	?																; Integer holding the lowest number entered - initialized to most opposite value
+printVal	DWORD	?																; Integer holding the lowest number entered - initialized to most opposite value
 
 
 ; Executable instructions
@@ -50,22 +50,21 @@ print_val	DWORD	?																; Integer holding the lowest number entered - i
 .code  
 main PROC
 
-
 ; Introduce title, programmer, and extra credit options
 	call	introduction
 
 
 MAIN_LOOP:																			; Restart if chosen from quit proc
 
+; Prompt for the number of composites
+	call	getUserData
 
 ; Ask if the user wants to quit
 	call	quit
 
-
 ; Check the value set in the quit procedure
-	cmp		quit_val, 1
+	cmp		quitVal, 1
 	jne		MAIN_LOOP
-
 
 ; Function that says "Good-bye"	
 	call	farewell
@@ -73,7 +72,6 @@ MAIN_LOOP:																			; Restart if chosen from quit proc
 
 ; Exit to operating system
 	exit							
-
 
 main ENDP
 
@@ -83,7 +81,10 @@ main ENDP
 ;------------------------------------------------------------
 ; introduction
 ;
-; Prints the Introductory message
+; Description:       Prints the Introductory message
+; Pre-conditions:	 none
+; Post-conditions:	 none
+; Registers changed: edx
 ;------------------------------------------------------------
 
 introduction PROC
@@ -105,9 +106,9 @@ introduction PROC
 ; Print the instructions
 	mov		edx, OFFSET instr1
 	call	WriteString
-	call	CrLf
 	mov		edx, OFFSET instr2
 	call	WriteString
+	call	CrLf
 	mov		edx, OFFSET instr3
 	call	WriteString
 	call	CrLf
@@ -116,39 +117,89 @@ introduction PROC
 
 introduction ENDP
 
-;------------------------------------------------------------
+
+;------------------------------------------------------------------------------
 ; getUserData
 ;
-; Gets the number of composites to be displayed
-;------------------------------------------------------------
+; Description:       Gets the number of composites to be displayed
+; Pre-conditions:	 none
+; Post-conditions:	 validated number of composites stored in numInput
+; Registers changed: edx, eax
+;------------------------------------------------------------------------------
 
 getUserData PROC
 
+RE_RUN:
+
+; Prompt and receive the user value
+	call	CrLf
+	mov		edx, OFFSET numPrompt
+	call	WriteString
+	call	ReadInt
+	mov		numInput, eax
+	call	validate
+
+; Check the bool and pass or print error message
+	cmp		numCheck, 1
+	je		TEST_EXIT																; JE
+	call	CrLf
+	mov		edx, OFFSET errPrompt
+	call	WriteString
+	call	CrLf
+	jmp		RE_RUN																	; JMP
+
+TEST_EXIT:
 
 	ret
 
 getUserData ENDP
 
 
-;------------------------------------------------------------
+;------------------------------------------------------------------------------
 ; validate
 ;
-; Validates the user's entered value to be in range 1-400
-;------------------------------------------------------------
+; Description:        Validates the user's entered value to be in range 1-400
+; Pre-conditions:	  potentially in range number of composites in numInput
+; Post-conditions:	  numCheck set to 1 for passing or 0 for failure
+; Registers changed:  eax
+;------------------------------------------------------------------------------
 
 validate PROC
 
+; Test that the numInput is between 1-400 inclusive
+	mov		numCheck, 0
+	mov		eax, numInput
+	cmp		eax, MIN_NUM
+	jge		HIGH_CHECK																; Pass low range
+	jmp		TEST_EXIT																; Failed low range
+
+HIGH_CHECK:
+	
+; Check the value against max of range
+	cmp		eax, MAX_NUM
+	jle		TEST_PASS																; High range passed
+	jmp		TEST_EXIT																; Test failed
+
+TEST_PASS:																			; Both tests pass
+
+; Set numCheck to 1 because it passed
+	mov		numCheck, 1
+
+TEST_EXIT:
 
 	ret
 
 validate ENDP
 
 
-;------------------------------------------------------------
+;------------------------------------------------------------------------------
 ; showComposites
 ;
-; Prints the composite numbers for the selected range
-;------------------------------------------------------------
+; Description:        Prints the composite numbers for the selected range
+; Pre-conditions:
+; Post-conditions:
+; Registers changed:
+;------------------------------------------------------------------------------
 
 showComposites PROC
 
@@ -158,11 +209,14 @@ showComposites PROC
 showComposites ENDP
 
 
-;------------------------------------------------------------
+;------------------------------------------------------------------------------
 ; isComposite
 ;
-; Determines if a value is a composite number
-;------------------------------------------------------------
+; Description:        Determines if a value is a composite number
+; Pre-conditions:
+; Post-conditions:
+; Registers changed:
+;------------------------------------------------------------------------------
 
 isComposite PROC
 
@@ -172,11 +226,14 @@ isComposite PROC
 isComposite ENDP
 
 
-;------------------------------------------------------------
+;------------------------------------------------------------------------------
 ; quit
 ;
-; Prints the quit dialog
-;------------------------------------------------------------
+; Description:        Prints the quit dialog
+; Pre-conditions:
+; Post-conditions:
+; Registers changed:
+;------------------------------------------------------------------------------
 
 quit PROC
 
@@ -185,18 +242,21 @@ quit PROC
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
 	call	ReadInt
-	mov		quit_val, eax
+	mov		quitVal, eax
 
 	ret
 
 quit ENDP
 
 
-;------------------------------------------------------------
+;------------------------------------------------------------------------------
 ; finish
 ;
-; Prints the Goodbye message
-;------------------------------------------------------------
+; Description:        Prints the Goodbye message
+; Pre-conditions:
+; Post-conditions:
+; Registers changed:
+;------------------------------------------------------------------------------
 
 farewell PROC															
 
