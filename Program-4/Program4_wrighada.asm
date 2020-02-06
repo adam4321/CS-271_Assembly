@@ -4,7 +4,7 @@ TITLE Program 4                 Program4_wrighada.asm
 ; Last Modified:				2-5-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
-; Project Number:               3  
+; Project Number:               4  
 ; Due Date:						2-16-2020
 ; Description:					Assembly program which prompts the user to enter
 ;								the amount of composite numbers to be displayed
@@ -29,12 +29,12 @@ LIMIT_NEG_1 = -1																	; Constant holding the highest possible value f
 ; Variable definitions
 
 .data
-intro		BYTE	"Program-3 -- Average of negative numbers", 0
+intro		BYTE	"Program-4 -- Composite Numbers", 0
 programmer	BYTE	"Programmed by Adam Wright", 0
-extCred1	BYTE	"**EC-1: Number the lines during user input.", 0
+extCred1	BYTE	"**EC-1: Align the output columns.", 0
 userPrompt	BYTE	"What's your name? ", 0
 userGreet	BYTE	"Hello, ", 0
-instr1		BYTE	"Please enter numbers in [-88, -55] or [-40, -1].", 0
+instr1		BYTE	"Please enter a number between 1-400.", 0
 instr2		BYTE	"Enter a non-negative number ", 0
 instr3		BYTE	"when you are finished to see results.", 0
 numPrompt	BYTE	" - Enter a number: ", 0
