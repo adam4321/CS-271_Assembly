@@ -44,6 +44,7 @@ numCheck	DWORD	0																; Integer representing a bool for whether the us
 compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is in range)
 numInput	DWORD	?																; Integer holding the user's input number
 printVal	DWORD	?																; Integer holding the composite to be printed
+colNum		DWORD	1																; Integer counting the current column number
 
 
 ; Executable instructions
@@ -224,15 +225,29 @@ LOOP_UNTIL_NUM:
 	jne		CONTINUE																; JMP
 
 
+; Set up nested column loop
+	mov
+
+; Print valid numbers
 	call	WriteDec
 	mov		edx, OFFSET space
 	call	WriteString
-
+	inc		colNum
+	cmp		colNum, 10
+	je		LOOP_COLUMNS
 
 CONTINUE:
 
 	inc		eax
 	loop	LOOP_UNTIL_NUM
+
+LOOP_COLUMNS:
+
+; Add a new line after 10 columns
+	call	CrLf
+	mov		colNum, 1
+	jmp		LOOP_UNTIL_NUM
+
 
 	call	CrLf
 	ret
