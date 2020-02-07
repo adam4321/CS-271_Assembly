@@ -36,14 +36,14 @@ instr3		BYTE	"I can print up to 400 composites.", 0
 numPrompt	BYTE	"Enter the number of composites to display [1 .. 400]: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
-space		BYTE	" ", 0
+space		BYTE	"   ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye!", 0
 quitVal	DWORD	1																	; Integer holding 1 to quit or any other value to continue
 numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range (1 is in range)
 compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is in range)
 numInput	DWORD	?																; Integer holding the user's input number
-printVal	DWORD	?																; Integer holding the composite to be printed
+curVal		DWORD	4																; Integer holding the composite to be checked and printed
 colNum		DWORD	0																; Integer counting the current column number
 
 
@@ -201,7 +201,7 @@ validate ENDP
 ; showComposites
 ;
 ; Description:        Prints the composite numbers for the selected range
-; Pre-conditions:
+; Pre-conditions:	  ColNum = 0, 
 ; Post-conditions:
 ; Registers changed:  eax, ecx, edx
 ;------------------------------------------------------------------------------
@@ -210,20 +210,24 @@ showComposites PROC
 
 ; Loop from 1 - the user entered number
 	call	CrLf
-	mov		eax, MIN_NUM
+	mov		colNum, 0
 	mov		ecx, numInput
 
 LOOP_UNTIL_NUM:																		; 
 
+COMPOSITE_LOOP:
+
 ; Call isComposite on current num
-	mov		compCheck, 1
+	mov		eax, curVal
+	mov		compCheck, 0
 	call	isComposite
 
 ; Check if isComposite passed
 	cmp		compCheck, 1
-	jne		CONTINUE																; JMP
+	jne		COMPOSITE_LOOP															; JMP
 
 ; Print valid numbers
+	mov		eax, curVal
 	call	WriteDec
 	mov		edx, OFFSET space
 	call	WriteString
@@ -231,13 +235,20 @@ LOOP_UNTIL_NUM:																		;
 ; Print 10 columns per line
 	inc		colNum
 	cmp		colNum, 10
-	je		LOOP_COLUMNS															; 
+	je		LAST_COLUMN																; 
 
 CONTINUE:
 
-	inc		eax
+; Complete an iteration or end loop
+	inc		curVal
 	loop	LOOP_UNTIL_NUM
 	jmp		AFTER_LOOP																; 														
+
+LAST_COLUMN:
+
+; Don't add line after last line
+	cmp		eax, numInput
+	je		AFTER_LOOP																; 
 
 LOOP_COLUMNS:
 
@@ -248,7 +259,6 @@ LOOP_COLUMNS:
 
 AFTER_LOOP:																			
 
-	call	CrLf
 	ret
 
 showComposites ENDP
@@ -258,24 +268,46 @@ showComposites ENDP
 ; isComposite
 ;
 ; Description:        Determines if a value is a composite number
-; Pre-conditions:
+; Pre-conditions:	  eax contains
 ; Post-conditions:
-; Registers changed:
+; Registers changed:  
 ;------------------------------------------------------------------------------
 
 isComposite PROC
 
-; Check n <= 1 (return false)
-	
+CHECK_1:
 
-; Check n <= 3 (return false)
+; Check n % (2 to n-1) == 0 (return true)
+	mov		ebx, 2
 
+CHECK_1_LOOP:
 
-; Check n % 2 == 0 (return true)
+; Loop from 2 to n-1
+	mov		eax, curVal
+	sub		eax, 1
+	cmp		ebx, eax
+	jge		CHECK_2																	; 
 
+	mov		eax, curVal
+	mov		edx, 0
+	div		ebx
+	cmp		edx, 0
+	je		PASS																	; 
+	inc		ebx
+	jmp		CHECK_1_LOOP															; 
 
-; Check n % 3 == 0 (return true)
+PASS:
 
+; Passed composite test 
+	mov		compCheck, 1
+
+	ret
+
+CHECK_2:
+
+; Number is prime (return false)
+
+	inc		curVal
 	ret
 
 isComposite ENDP
@@ -294,10 +326,12 @@ quit PROC
 
 ; Prompt the user to press 1 to quit or 2 to restart
 	call	CrLf
+	call	CrLf
 	mov		edx, OFFSET	quitPrompt
 	call	WriteString
 	call	ReadInt
 	mov		quitVal, eax
+	mov		curVal, 4
 
 	ret
 
