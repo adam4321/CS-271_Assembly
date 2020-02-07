@@ -40,9 +40,10 @@ space		BYTE	" ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye!", 0
 quitVal	DWORD	1																	; Integer holding 1 to quit or any other value to continue
-numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range
-numInput	DWORD	?																; Integer holding the current input number
-printVal	DWORD	?																; Integer holding the lowest number entered - initialized to most opposite value
+numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range (1 is in range)
+compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is in range)
+numInput	DWORD	?																; Integer holding the user's input number
+printVal	DWORD	?																; Integer holding the composite to be printed
 
 
 ; Executable instructions
@@ -59,12 +60,15 @@ MAIN_LOOP:																			; Restart if chosen from quit proc
 ; Prompt for the number of composites
 	call	getUserData
 
+; Calculate and print composites
+	call	showComposites
+
 ; Ask if the user wants to quit
 	call	quit
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
-	jne		MAIN_LOOP
+	jne		MAIN_LOOP																; Jmp to reset
 
 ; Function that says "Good-bye"	
 	call	farewell
@@ -203,6 +207,17 @@ validate ENDP
 
 showComposites PROC
 
+; Loop from 1 - the user entered number
+	mov		eax, MIN_NUM
+	mov		ecx, numInput
+
+L1:
+
+	call	CrLf
+	call	WriteDec
+	call	CrLf
+	inc		eax
+	loop	L1
 
 	ret
 
