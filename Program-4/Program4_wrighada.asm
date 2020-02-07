@@ -208,17 +208,33 @@ validate ENDP
 showComposites PROC
 
 ; Loop from 1 - the user entered number
+	call	CrLf
 	mov		eax, MIN_NUM
 	mov		ecx, numInput
 
-L1:
 
-	call	CrLf
+LOOP_UNTIL_NUM:
+
+; Call isComposite on current num
+	mov		compCheck, 1
+	call	isComposite
+
+; Check if isComposite passed
+	cmp		compCheck, 1
+	jne		CONTINUE																; JMP
+
+
 	call	WriteDec
-	call	CrLf
-	inc		eax
-	loop	L1
+	mov		edx, OFFSET space
+	call	WriteString
 
+
+CONTINUE:
+
+	inc		eax
+	loop	LOOP_UNTIL_NUM
+
+	call	CrLf
 	ret
 
 showComposites ENDP
