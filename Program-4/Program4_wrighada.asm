@@ -44,7 +44,7 @@ numCheck	DWORD	0																; Integer representing a bool for whether the us
 compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is in range)
 numInput	DWORD	?																; Integer holding the user's input number
 printVal	DWORD	?																; Integer holding the composite to be printed
-colNum		DWORD	1																; Integer counting the current column number
+colNum		DWORD	0																; Integer counting the current column number
 
 
 ; Executable instructions
@@ -203,7 +203,7 @@ validate ENDP
 ; Description:        Prints the composite numbers for the selected range
 ; Pre-conditions:
 ; Post-conditions:
-; Registers changed:
+; Registers changed:  eax, ecx, edx
 ;------------------------------------------------------------------------------
 
 showComposites PROC
@@ -213,8 +213,7 @@ showComposites PROC
 	mov		eax, MIN_NUM
 	mov		ecx, numInput
 
-
-LOOP_UNTIL_NUM:
+LOOP_UNTIL_NUM:																		; 
 
 ; Call isComposite on current num
 	mov		compCheck, 1
@@ -224,30 +223,30 @@ LOOP_UNTIL_NUM:
 	cmp		compCheck, 1
 	jne		CONTINUE																; JMP
 
-
-; Set up nested column loop
-	mov
-
 ; Print valid numbers
 	call	WriteDec
 	mov		edx, OFFSET space
 	call	WriteString
+
+; Print 10 columns per line
 	inc		colNum
 	cmp		colNum, 10
-	je		LOOP_COLUMNS
+	je		LOOP_COLUMNS															; 
 
 CONTINUE:
 
 	inc		eax
 	loop	LOOP_UNTIL_NUM
+	jmp		AFTER_LOOP																; 														
 
 LOOP_COLUMNS:
 
 ; Add a new line after 10 columns
 	call	CrLf
-	mov		colNum, 1
-	jmp		LOOP_UNTIL_NUM
+	mov		colNum, 0
+	jmp		CONTINUE																; 
 
+AFTER_LOOP:																			
 
 	call	CrLf
 	ret
@@ -266,6 +265,16 @@ showComposites ENDP
 
 isComposite PROC
 
+; Check n <= 1 (return false)
+	
+
+; Check n <= 3 (return false)
+
+
+; Check n % 2 == 0 (return true)
+
+
+; Check n % 3 == 0 (return true)
 
 	ret
 
@@ -278,7 +287,7 @@ isComposite ENDP
 ; Description:        Prints the quit dialog
 ; Pre-conditions:
 ; Post-conditions:
-; Registers changed:
+; Registers changed:  edx, eax
 ;------------------------------------------------------------------------------
 
 quit PROC
@@ -301,7 +310,7 @@ quit ENDP
 ; Description:        Prints the Goodbye message
 ; Pre-conditions:
 ; Post-conditions:
-; Registers changed:
+; Registers changed:  edx
 ;------------------------------------------------------------------------------
 
 farewell PROC															
