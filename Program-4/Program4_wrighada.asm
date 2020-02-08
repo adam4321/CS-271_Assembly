@@ -1,7 +1,7 @@
 TITLE Program 4                 Program4_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-6-2020
+; Last Modified:				2-7-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               4  
@@ -39,7 +39,7 @@ quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 space		BYTE	"   ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye!", 0
-quitVal	DWORD	1																	; Integer holding 1 to quit or any other value to continue
+quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range (1 is in range)
 compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is in range)
 numInput	DWORD	?																; Integer holding the user's input number
@@ -55,8 +55,7 @@ main PROC
 ; Introduce title, programmer, and extra credit options
 	call	introduction
 
-
-MAIN_LOOP:																			; Restart if chosen from quit proc
+MAIN_LOOP:																			; Restart if chosen from quit procedure (quitVal == 1)
 
 ; Prompt for the number of composites
 	call	getUserData
@@ -73,7 +72,6 @@ MAIN_LOOP:																			; Restart if chosen from quit proc
 
 ; Function that says "Good-bye"	
 	call	farewell
-
 
 ; Exit to operating system
 	exit							
@@ -201,8 +199,8 @@ validate ENDP
 ; showComposites
 ;
 ; Description:        Prints the composite numbers for the selected range
-; Pre-conditions:	  ColNum = 0, 
-; Post-conditions:
+; Pre-conditions:	  ColNum == 0, curVal == 4, numInput in range
+; Post-conditions:	  all composite numbers in user's range are printed
 ; Registers changed:  eax, ecx, edx
 ;------------------------------------------------------------------------------
 
@@ -269,15 +267,15 @@ showComposites ENDP
 ;
 ; Description:        Determines if a value is a composite number
 ; Pre-conditions:	  eax contains
-; Post-conditions:
-; Registers changed:  
+; Post-conditions:	  compCheck remains 0 for fail or set to 1 for pass
+; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
 
 isComposite PROC
 
 CHECK_1:
 
-; Check n % (2 to n-1) == 0 (return true)
+; Check n % (2 to n-1) == 0 (composite number)
 	mov		ebx, 2
 
 CHECK_1_LOOP:
@@ -298,7 +296,7 @@ CHECK_1_LOOP:
 
 PASS:
 
-; Passed composite test 
+; Passed composite test (return true)
 	mov		compCheck, 1
 
 	ret
@@ -306,7 +304,6 @@ PASS:
 CHECK_2:
 
 ; Number is prime (return false)
-
 	inc		curVal
 	ret
 
@@ -317,8 +314,8 @@ isComposite ENDP
 ; quit
 ;
 ; Description:        Prints the quit dialog
-; Pre-conditions:
-; Post-conditions:
+; Pre-conditions:	  composite loop complete
+; Post-conditions:	  quitVal == 1 to quit or any other value to continue
 ; Registers changed:  edx, eax
 ;------------------------------------------------------------------------------
 
@@ -342,8 +339,8 @@ quit ENDP
 ; finish
 ;
 ; Description:        Prints the Goodbye message
-; Pre-conditions:
-; Post-conditions:
+; Pre-conditions:	  quitVal == 1
+; Post-conditions:	  none
 ; Registers changed:  edx
 ;------------------------------------------------------------------------------
 
