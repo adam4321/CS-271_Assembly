@@ -1,7 +1,7 @@
 TITLE Program 4                 Program4_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-7-2020
+; Last Modified:				2-8-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               4  
@@ -36,7 +36,9 @@ instr3		BYTE	"I can print up to 400 composites.", 0
 numPrompt	BYTE	"Enter the number of composites to display [1 .. 400]: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
-space		BYTE	"   ", 0
+space1		BYTE	"     ", 0
+space2		BYTE	"    ", 0
+space3		BYTE	"   ", 0
 byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 byePrompt2	BYTE	"Good-bye!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
@@ -211,7 +213,7 @@ showComposites PROC
 	mov		colNum, 0
 	mov		ecx, numInput
 
-LOOP_UNTIL_NUM:																		; 
+LOOP_UNTIL_NUM:																		; Loop until inputNum reached From: line- 
 
 COMPOSITE_LOOP:
 
@@ -222,13 +224,40 @@ COMPOSITE_LOOP:
 
 ; Check if isComposite passed
 	cmp		compCheck, 1
-	jne		COMPOSITE_LOOP															; JMP
+	jne		COMPOSITE_LOOP															; Not a composite then skip JMP To: line-
 
-; Print valid numbers
+; Print valid numbers and check length for spaces
 	mov		eax, curVal
 	call	WriteDec
-	mov		edx, OFFSET space
+	cmp		eax, 9
+	jle		SPACE_1
+	cmp		eax, 99
+	jle		SPACE_2
+	jmp		SPACE_3
+
+SPACE_1:
+
+; Print spaces (1 digit 5 spaces)
+	mov		edx, OFFSET space1
 	call	WriteString
+	jmp		COLUMN_CHECK
+
+SPACE_2:
+
+; Print spaces (2 digit 4 spaces)
+	mov		edx, OFFSET space2
+	call	WriteString
+	jmp		COLUMN_CHECK
+
+SPACE_3:
+
+; Print spaces (3 digit 3 spaces)
+	mov		edx, OFFSET space3
+	call	WriteString
+	jmp		COLUMN_CHECK
+
+COLUMN_CHECK:
+
 
 ; Print 10 columns per line
 	inc		colNum
@@ -275,7 +304,7 @@ isComposite PROC
 
 CHECK_1:
 
-; Check n % (2 to n-1) == 0 (composite number)
+; Check n % (2 to i-1) == 0 (composite number)
 	mov		ebx, 2
 
 CHECK_1_LOOP:
@@ -286,6 +315,7 @@ CHECK_1_LOOP:
 	cmp		ebx, eax
 	jge		CHECK_2																	; 
 
+; Div and check remainder == 0 to pass
 	mov		eax, curVal
 	mov		edx, 0
 	div		ebx
@@ -305,6 +335,7 @@ CHECK_2:
 
 ; Number is prime (return false)
 	inc		curVal
+
 	ret
 
 isComposite ENDP
