@@ -46,6 +46,7 @@ compCheck	DWORD	1																; Integer representing a bool for whether a num
 numInput	DWORD	?																; Integer holding the user's input number
 curVal		DWORD	4																; Integer holding the composite to be checked and printed
 colNum		DWORD	0																; Integer counting the current column number
+numPrinted	DWORD	0																; Integer counting the amount of printed numbers
 
 
 ; Executable instructions
@@ -226,6 +227,7 @@ COMPOSITE_LOOP:
 	jne		COMPOSITE_LOOP															; Not a composite then skip JMP To: line-217
 
 ; Print valid number and check length for spaces
+	inc		numPrinted
 	mov		eax, curVal
 	call	WriteDec
 	cmp		eax, 9
@@ -272,9 +274,10 @@ CONTINUE:
 
 LAST_COLUMN:
 
-; Don't add line after last line
-	cmp		eax, numInput
-	je		AFTER_LOOP																; Loop completed JMP To: line-286
+; Check for last line to skip newline
+	mov		eax, numInput
+	cmp		eax, numPrinted
+	je		CONTINUE																; Loop completed JMP To: line-286
 
 LOOP_COLUMNS:
 
@@ -358,6 +361,9 @@ quit PROC
 	call	WriteString
 	call	ReadInt
 	mov		quitVal, eax
+
+; Reset variables for possible next running
+	mov		numPrinted, 0
 	mov		curVal, 4
 
 	ret
