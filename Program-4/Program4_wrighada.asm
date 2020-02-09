@@ -1,7 +1,7 @@
 TITLE Program 4                 Program4_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-8-2020
+; Last Modified:				2-9-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               4  
@@ -57,7 +57,7 @@ main PROC
 ; Introduce title, programmer, and extra credit options
 	call	introduction
 
-MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-72
+MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-73
 
 ; Prompt for the number of composites
 	call	getUserData
@@ -70,7 +70,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-72
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
-	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-59
+	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-60
 
 ; Function that says "Good-bye"	
 	call	farewell
@@ -136,7 +136,7 @@ getUserData PROC
 
 RE_RUN:
 
-; Prompt and receive the user value
+; Prompt for user value and call validate proc
 	call	CrLf
 	mov		edx, OFFSET numPrompt
 	call	WriteString
@@ -146,12 +146,12 @@ RE_RUN:
 
 ; Check the bool and pass or print error message
 	cmp		numCheck, 1
-	je		TEST_EXIT																; User num passes validation JE To: line-155
+	je		TEST_EXIT																; User num passes validation JE To: line-156
 	call	CrLf
 	mov		edx, OFFSET errPrompt
 	call	WriteString
 	call	CrLf
-	jmp		RE_RUN																	; Retry when user num fails validation JMP To: line-136
+	jmp		RE_RUN																	; Retry when user num fails validation JMP To: line-137
 
 TEST_EXIT:
 
@@ -175,17 +175,17 @@ validate PROC
 	mov		numCheck, 0
 	mov		eax, numInput
 	cmp		eax, MIN_NUM
-	jge		HIGH_CHECK																; Pass low range move to high test JGE To: line-180
-	jmp		TEST_EXIT																; Failed low range JMP To: line-192 
+	jge		HIGH_CHECK																; Pass low range move to high test JGE To: line-181
+	jmp		TEST_EXIT																; Failed low range JMP To: line-193
 
 HIGH_CHECK:
 	
 ; Check the value against max of range
 	cmp		eax, MAX_NUM
-	jle		TEST_PASS																; High range passed JLE To: line-187
-	jmp		TEST_EXIT																; Test failed JMP To: line-192
+	jle		TEST_PASS																; High range passed JLE To: line-188
+	jmp		TEST_EXIT																; Test failed JMP To: line-193
 
-TEST_PASS:																			; Both tests passed JLE From: line-184
+TEST_PASS:																			; Both tests passed JLE From: line-185
 
 ; Set numCheck to 1 because it passed, else it stays 0 for fail
 	mov		numCheck, 1
@@ -213,7 +213,7 @@ showComposites PROC
 	mov		colNum, 0
 	mov		ecx, numInput
 
-LOOP_UNTIL_NUM:																		; Loop using LOOP instruction until inputNum reached From: line-270
+LOOP_UNTIL_NUM:																		; Loop using LOOP instruction until inputNum reached From: line-272
 
 COMPOSITE_LOOP:
 
@@ -224,38 +224,38 @@ COMPOSITE_LOOP:
 
 ; Check if isComposite passed
 	cmp		compCheck, 1
-	jne		COMPOSITE_LOOP															; Not a composite then skip JMP To: line-217
+	jne		COMPOSITE_LOOP															; Not a composite then skip JMP To: line-218
 
 ; Print valid number and check length for spaces
 	inc		numPrinted
 	mov		eax, curVal
 	call	WriteDec
 	cmp		eax, 9
-	jle		SPACE_1                                                                 ; 1 digit number JLE To: line-237
+	jle		SPACE_1                                                                 ; 1 digit number JLE To: line-239
 	cmp		eax, 99
-	jle		SPACE_2                                                                 ; 2 digit number JLE To: line-244
-	jmp		SPACE_3                                                                 ; 3 digit number JMP To: line-251
+	jle		SPACE_2                                                                 ; 2 digit number JLE To: line-246
+	jmp		SPACE_3                                                                 ; 3 digit number JMP To: line-253
 
 SPACE_1:
 
 ; Print spaces (1 digit 5 spaces)
 	mov		edx, OFFSET space1
 	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-258
+	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
 
 SPACE_2:
 
 ; Print spaces (2 digit 4 spaces)
 	mov		edx, OFFSET space2
 	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-258
+	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
 
 SPACE_3:
 
 ; Print spaces (3 digit 3 spaces)
 	mov		edx, OFFSET space3
 	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-258
+	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
 
 COLUMN_CHECK:
 
@@ -263,28 +263,28 @@ COLUMN_CHECK:
 ; Print 10 columns per line
 	inc		colNum
 	cmp		colNum, 10
-	je		LAST_COLUMN																; Don't CrLf final row JE To: line-273  
+	je		LAST_COLUMN																; Check for last row before adding newline JE To: line-275 
 
 CONTINUE:
 
 ; Complete an iteration or end loop
 	inc		curVal
 	loop	LOOP_UNTIL_NUM
-	jmp		AFTER_LOOP																; Loop completed JMP To: line-286														
+	jmp		AFTER_LOOP																; Loop completed JMP To: line-289													
 
 LAST_COLUMN:
 
-; Check for last line to skip newline
+; Check for last row to skip newline
 	mov		eax, numInput
 	cmp		eax, numPrinted
-	je		CONTINUE																; Loop completed JMP To: line-286
+	je		CONTINUE																; Loop completed JMP To: line-289
 
 LOOP_COLUMNS:
 
 ; Add a new line after 10 columns
 	call	CrLf
 	mov		colNum, 0
-	jmp		CONTINUE																; Continue after newline JMP To: line-266
+	jmp		CONTINUE																; Continue after newline JMP To: line-268
 
 AFTER_LOOP:																			
 
@@ -315,16 +315,16 @@ CHECK_1_LOOP:
 	mov		eax, curVal
 	sub		eax, 1
 	cmp		ebx, eax
-	jge		CHECK_2																	; Exit when loop reaches n-1 JGE To: line-333
+	jge		CHECK_2																	; Exit when loop reaches n-1 JGE To: line-336
 
 ; Div and check remainder == 0 to pass
 	mov		eax, curVal
 	mov		edx, 0
 	div		ebx
 	cmp		edx, 0
-	je		PASS																	; Number is composite JE To: line-326
+	je		PASS																	; Number is composite JE To: line-329
 	inc		ebx
-	jmp		CHECK_1_LOOP															; Loop again JMP To: line-309
+	jmp		CHECK_1_LOOP															; Loop again JMP To: line-312
 
 PASS:
 
