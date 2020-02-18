@@ -1,16 +1,22 @@
-Microsoft (R) Macro Assembler Version 14.24.28315.0	    01/27/20 23:40:56
-/Program 3                 Program2_wrighada.as		     Page 1 - 1
+Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/05/20 14:54:03
+/Program 3                 Program3_wrighada.as		     Page 1 - 1
 
 
-				TITLE Program 3                 Program2_wrighada.asm
+				TITLE Program 3                 Program3_wrighada.asm
 
 				; Author:						Adam Wright
-				; Last Modified:				1-27-2020
+				; Last Modified:				2-5-2020
 				; OSU email address:			wrighada@oregonstate.edu
 				; Course number/section:		cs271-400
 				; Project Number:               3  
 				; Due Date:						2-9-2020
-				; Description:					Assembly program which 
+				; Description:					Assembly program which prompts the user to enter
+				;								numbers repeatedly within the ranges of 
+				;								[-88, -55] or [-40, -1], and then terminates on
+				;								a positive number and then displays the average
+				;								rounded to the nearest integer, sum, and lowest
+				;								and highest values.
+
 
 				INCLUDE Irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -34,100 +40,113 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    01/27/20 23:40:56
 
 				; Constant definitions
 
- = 00000001			LOWER_LIMIT = 1																			; Constant holding the lowest possbie value for fibCount
- = 0000002E			UPPER_LIMIT = 46																		; Constant holding the highest possible value for fibCount
- = 00000009			SPACING = 9																				; Constant holding the ascii key code for a tab
+ =-00000058			LIMIT_NEG_88 = -88																	; Constant holding the lowest possbie value for input
+ =-00000037			LIMIT_NEG_55 = -55																	; Constant holding the highest possible value for lower range
+ =-00000028			LIMIT_NEG_40 = -40																	; Constant holding the lowest possible value for higher range
+ =-00000001			LIMIT_NEG_1 = -1																	; Constant holding the highest possible value for input
+
 
 				; Variable definitions
 
  00000000			.data
- 00000000 50 72 6F 67 72	intro		BYTE	"Program-2 -- Fibonacci Sequence", 0
-	   61 6D 2D 32 20
-	   2D 2D 20 46 69
-	   62 6F 6E 61 63
-	   63 69 20 53 65
-	   71 75 65 6E 63
-	   65 00
- 00000020 50 72 6F 67 72	programmer	BYTE	"Programmed by Adam Wright", 0
+ 00000000 50 72 6F 67 72	intro		BYTE	"Program-3 -- Average of negative numbers", 0
+	   61 6D 2D 33 20
+	   2D 2D 20 41 76
+	   65 72 61 67 65
+	   20 6F 66 20 6E
+	   65 67 61 74 69
+	   76 65 20 6E 75
+	   6D 62 65 72 73
+	   00
+ 00000029 50 72 6F 67 72	programmer	BYTE	"Programmed by Adam Wright", 0
 	   61 6D 6D 65 64
 	   20 62 79 20 41
 	   64 61 6D 20 57
 	   72 69 67 68 74
 	   00
- 0000003A 2A 2A 45 43 2D	extCred1	BYTE	"**EC-1: Display the numbers in alligned columns.", 0
-	   31 3A 20 44 69
-	   73 70 6C 61 79
-	   20 74 68 65 20
-	   6E 75 6D 62 65
-	   72 73 20 69 6E
-	   20 61 6C 6C 69
-	   67 6E 65 64 20
-	   63 6F 6C 75 6D
-	   6E 73 2E 00
- 0000006B 2A 2A 45 43 2D	extCred2	BYTE	"**EC-2: Program repeats until the user quits.", 0
-	   32 3A 20 50 72
-	   6F 67 72 61 6D
-	   20 72 65 70 65
-	   61 74 73 20 75
-	   6E 74 69 6C 20
-	   74 68 65 20 75
-	   73 65 72 20 71
-	   75 69 74 73 2E
-	   00
- 00000099 57 68 61 74 27	userPrompt	BYTE	"What's your name? ", 0
+ 00000043 2A 2A 45 43 2D	extCred1	BYTE	"**EC-1: Number the lines during user input.", 0
+	   31 3A 20 4E 75
+	   6D 62 65 72 20
+	   74 68 65 20 6C
+	   69 6E 65 73 20
+	   64 75 72 69 6E
+	   67 20 75 73 65
+	   72 20 69 6E 70
+	   75 74 2E 00
+ 0000006F 57 68 61 74 27	userPrompt	BYTE	"What's your name? ", 0
 	   73 20 79 6F 75
 	   72 20 6E 61 6D
 	   65 3F 20 00
- 000000AC 48 65 6C 6C 6F	userGreet	BYTE	"Hello, ", 0
+ 00000082 48 65 6C 6C 6F	userGreet	BYTE	"Hello, ", 0
 	   2C 20 00
- 000000B4 54 68 69 73 20	instr1		BYTE	"This program displays the Fibonacci sequence. ", 0
-	   70 72 6F 67 72
-	   61 6D 20 64 69
-	   73 70 6C 61 79
-	   73 20 74 68 65
-	   20 46 69 62 6F
-	   6E 61 63 63 69
-	   20 73 65 71 75
-	   65 6E 63 65 2E
-	   20 00
- 000000E3 45 6E 74 65 72	instr2		BYTE	"Enter the number of terms to be displayed.", 0
-	   20 74 68 65 20
-	   6E 75 6D 62 65
-	   72 20 6F 66 20
-	   74 65 72 6D 73
-	   20 74 6F 20 62
-	   65 20 64 69 73
-	   70 6C 61 79 65
-	   64 2E 00
- 0000010E 47 69 76 65 20	instr3		BYTE	"Give the number as an integer in the range [1 .. 46]. ", 0
-	   74 68 65 20 6E
-	   75 6D 62 65 72
-	   20 61 73 20 61
-	   6E 20 69 6E 74
-	   65 67 65 72 20
-	   69 6E 20 74 68
-	   65 20 72 61 6E
-	   67 65 20 5B 31
-	   20 2E 2E 20 34
-	   36 5D 2E 20 00
- 00000145 48 6F 77 20 6D	fibPrompt	BYTE	"How many Fibonacci terms do you want? ", 0
-	   61 6E 79 20 46
-	   69 62 6F 6E 61
-	   63 63 69 20 74
-	   65 72 6D 73 20
-	   64 6F 20 79 6F
-	   75 20 77 61 6E
-	   74 3F 20 00
- 0000016C 4F 75 74 20 6F	errPrompt	BYTE	"Out of range.  Enter a number in [1 .. 46]", 0
-	   66 20 72 61 6E
-	   67 65 2E 20 20
-	   45 6E 74 65 72
-	   20 61 20 6E 75
+ 0000008A 50 6C 65 61 73	instr1		BYTE	"Please enter numbers in [-88, -55] or [-40, -1].", 0
+	   65 20 65 6E 74
+	   65 72 20 6E 75
+	   6D 62 65 72 73
+	   20 69 6E 20 5B
+	   2D 38 38 2C 20
+	   2D 35 35 5D 20
+	   6F 72 20 5B 2D
+	   34 30 2C 20 2D
+	   31 5D 2E 00
+ 000000BB 45 6E 74 65 72	instr2		BYTE	"Enter a non-negative number ", 0
+	   20 61 20 6E 6F
+	   6E 2D 6E 65 67
+	   61 74 69 76 65
+	   20 6E 75 6D 62
+	   65 72 20 00
+ 000000D8 77 68 65 6E 20	instr3		BYTE	"when you are finished to see results.", 0
+	   79 6F 75 20 61
+	   72 65 20 66 69
+	   6E 69 73 68 65
+	   64 20 74 6F 20
+	   73 65 65 20 72
+	   65 73 75 6C 74
+	   73 2E 00
+ 000000FE 20 2D 20 45 6E	numPrompt	BYTE	" - Enter a number: ", 0
+	   74 65 72 20 61
+	   20 6E 75 6D 62
+	   65 72 3A 20 00
+ 00000112 4E 75 6D 62 65	errPrompt	BYTE	"Number Invalid!", 0
+	   72 20 49 6E 76
+	   61 6C 69 64 21
+	   00
+ 00000122 4E 6F 20 6E 75	noPrompt	BYTE	"No numbers entered!", 0
+	   6D 62 65 72 73
+	   20 65 6E 74 65
+	   72 65 64 21 00
+ 00000136 59 6F 75 20 65	validPmt1	BYTE	"You entered ", 0
+	   6E 74 65 72 65
+	   64 20 00
+ 00000143 20 76 61 6C 69	validPmt2	BYTE	" valid numbers.", 0
+	   64 20 6E 75 6D
+	   62 65 72 73 2E
+	   00
+ 00000153 54 68 65 20 6D	maxPrompt	BYTE	"The maximum valid number is ", 0
+	   61 78 69 6D 75
+	   6D 20 76 61 6C
+	   69 64 20 6E 75
 	   6D 62 65 72 20
-	   69 6E 20 5B 31
-	   20 2E 2E 20 34
-	   36 5D 00
- 00000197 50 72 65 73 73	quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
+	   69 73 20 00
+ 00000170 54 68 65 20 6D	minPrompt	BYTE	"The minimum valid number is ", 0
+	   69 6E 69 6D 75
+	   6D 20 76 61 6C
+	   69 64 20 6E 75
+	   6D 62 65 72 20
+	   69 73 20 00
+ 0000018D 54 68 65 20 73	sumPrompt	BYTE	"The sum of your valid numbers is ", 0
+	   75 6D 20 6F 66
+	   20 79 6F 75 72
+	   20 76 61 6C 69
+	   64 20 6E 75 6D
+	   62 65 72 73 20
+	   69 73 20 00
+ 000001AF 54 68 65 20 72	avgPrompt	BYTE	"The rounded average is ", 0
+	   6F 75 6E 64 65
+	   64 20 61 76 65
+	   72 61 67 65 20
+	   69 73 20 00
+ 000001C7 50 72 65 73 73	quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 	   20 31 20 74 6F
 	   20 71 75 69 74
 	   20 61 6E 64 20
@@ -135,25 +154,27 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    01/27/20 23:40:56
 	   63 6F 6E 74 69
 	   6E 75 65 3A 20
 	   00
- 000001BB 21 00			bangSym		BYTE	"!", 0
- 000001BD 52 65 73 75 6C	byePrompt1	BYTE	"Results certified by Adam Wright.", 0
+ 000001EB 21 00			bangSym		BYTE	"!", 0
+ 000001ED 20 00			space		BYTE	" ", 0
+ 000001EF 52 65 73 75 6C	byePrompt1	BYTE	"Results certified by Adam Wright.", 0
 	   74 73 20 63 65
 	   72 74 69 66 69
 	   65 64 20 62 79
 	   20 41 64 61 6D
 	   20 57 72 69 67
 	   68 74 2E 00
- 000001DF 47 6F 6F 64 2D	byePrompt2	BYTE	"Good-bye, ", 0
+ 00000211 47 6F 6F 64 2D	byePrompt2	BYTE	"Good-bye, ", 0
 	   62 79 65 2C 20
 	   00
- 000001EA  00000021 [		userName	BYTE	33 DUP(0)															; String variable holding user name 33 bytes initialized to 0
+ 0000021C  00000021 [		userName	BYTE	33 DUP(0)														; String variable holding user name 33 bytes initialized to 0
 	    00
 	   ]
- 0000020B 00000000		fibCount	DWORD	?																	; Integer which holds user entered Fibonacci terms count
- 0000020F 00000000		fibPrev		DWORD	0																	; Integer which holds Fibonacci of n-1
- 00000213 00000001		fibOut		DWORD	1																	; Integer which holds the current output value n
- 00000217 00000000		colCount	DWORD	0																	; Integer holding the current column to print
- 0000021B 00000000		rowCount	DWORD	0																	; Integer holding the current printing row
+ 0000023D 00000000		numInput	SDWORD	?																; Signed integer holding the current input number
+ 00000241 00000000		validCount	DWORD	0																; Integer holding the number of valid inputs
+ 00000245 FFFFFFFF		numLowest	SDWORD	-1																; Signed integer holding the lowest number entered - initialized to most opposite value
+ 00000249 FFFFFFA8		numHighest	SDWORD	-88																; Signed integer holding the highest number entered - initialized to most opposite value
+ 0000024D 00000000		numSum		SDWORD	0																; Signed integer holding the sum of the entered numbers
+ 00000251 00000000		numAvg		SDWORD	0																; Signed integer holding the average of the entered numbers
 
 
 				; Executable instructions
@@ -166,176 +187,260 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    01/27/20 23:40:56
  00000005  BA 00000000 R		mov		edx, OFFSET intro
  0000000A  E8 00000000 E		call	WriteString
  0000000F  E8 00000000 E		call	CrLf
- 00000014  BA 00000020 R		mov		edx, OFFSET programmer
+ 00000014  BA 00000029 R		mov		edx, OFFSET programmer
  00000019  E8 00000000 E		call	WriteString
  0000001E  E8 00000000 E		call	CrLf
  00000023  E8 00000000 E		call	CrLf
- 00000028  BA 0000003A R		mov		edx, OFFSET extCred1
+ 00000028  BA 00000043 R		mov		edx, OFFSET extCred1
  0000002D  E8 00000000 E		call	WriteString
  00000032  E8 00000000 E		call	CrLf
- 00000037  BA 0000006B R		mov		edx, OFFSET	extCred2
- 0000003C  E8 00000000 E		call	WriteString
- 00000041  E8 00000000 E		call	CrLf
- 00000046  E8 00000000 E		call	CrLf
+ 00000037  E8 00000000 E		call	CrLf
 
 				; Prompt for the user's name
- 0000004B  BA 00000099 R		mov		edx, OFFSET userPrompt
- 00000050  E8 00000000 E		call	WriteString
- 00000055  BA 000001EA R		mov		edx, OFFSET userName
- 0000005A  B9 00000020			mov		ecx, 32
- 0000005F  E8 00000000 E		call	ReadString
+ 0000003C  BA 0000006F R		mov		edx, OFFSET userPrompt
+ 00000041  E8 00000000 E		call	WriteString
+ 00000046  BA 0000021C R		mov		edx, OFFSET userName
+ 0000004B  B9 00000020			mov		ecx, 32
+ 00000050  E8 00000000 E		call	ReadString
 
 				; Greet the user using userName
- 00000064  BA 000000AC R		mov		edx, OFFSET userGreet
- 00000069  E8 00000000 E		call	WriteString
- 0000006E  BA 000001EA R		mov		edx, OFFSET userName
- 00000073  E8 00000000 E		call	WriteString
- 00000078  BA 000001BB R		mov		edx, OFFSET	bangSym
- 0000007D  E8 00000000 E		call	WriteString
- 00000082  E8 00000000 E		call	CrLf
- 00000087  E8 00000000 E		call	CrLf
+ 00000055  BA 00000082 R		mov		edx, OFFSET userGreet
+ 0000005A  E8 00000000 E		call	WriteString
+ 0000005F  BA 0000021C R		mov		edx, OFFSET userName
+ 00000064  E8 00000000 E		call	WriteString
+ 00000069  BA 000001EB R		mov		edx, OFFSET	bangSym
+ 0000006E  E8 00000000 E		call	WriteString
+ 00000073  E8 00000000 E		call	CrLf
+ 00000078  E8 00000000 E		call	CrLf
 
 				; Print the instructions
- 0000008C  BA 000000B4 R		mov		edx, OFFSET instr1
+ 0000007D  BA 0000008A R		mov		edx, OFFSET instr1
+ 00000082  E8 00000000 E		call	WriteString
+ 00000087  E8 00000000 E		call	CrLf
+ 0000008C  BA 000000BB R		mov		edx, OFFSET instr2
  00000091  E8 00000000 E		call	WriteString
- 00000096  BA 000000E3 R		mov		edx, OFFSET instr2
+ 00000096  BA 000000D8 R		mov		edx, OFFSET instr3
  0000009B  E8 00000000 E		call	WriteString
  000000A0  E8 00000000 E		call	CrLf
- 000000A5  BA 0000010E R		mov		edx, OFFSET instr3
- 000000AA  E8 00000000 E		call	WriteString
- 000000AF  E8 00000000 E		call	CrLf
 
 
- 000000B4			START_FIB:														; User can press 2 and continue with JMP From: line-195
+ 000000A5			MAIN_LOOP:														; User can press 2 and continue with JMP From: line-295
 
-				; Prompt for number of Fibonacci terms
- 000000B4  E8 00000000 E		call	CrLf
- 000000B9  BA 00000145 R		mov		edx, OFFSET fibPrompt
- 000000BE  E8 00000000 E		call	WriteString
- 000000C3  E8 00000000 E		call	ReadInt
- 000000C8  A3 0000020B R		mov		fibCount, eax
+				; Prompt for a number from user
+ 000000A5  E8 00000000 E		call	CrLf
+ 000000AA  A1 00000241 R		mov		eax, validCount
+ 000000AF  E8 00000000 E		call	WriteDec
+ 000000B4  BA 000000FE R		mov		edx, OFFSET numPrompt
+ 000000B9  E8 00000000 E		call	WriteString
+ 000000BE  E8 00000000 E		call	ReadInt
+ 000000C3  A3 0000023D R		mov		numInput, eax
+ 000000C8  0F 89 000000AA		jns		NO_PRINT											; Detect lack of negative Flag (Positive Int) JMP To: line-225
 
-				; Error test for int between 1-46								; Success JMP To: line-126 or Fail JMP To: line-117
- 000000CD  A1 0000020B R		mov		eax, fibCount
- 000000D2  83 F8 01			cmp		eax, LOWER_LIMIT
- 000000D5  7C 07			jl		INPUT_ERROR
- 000000D7  83 F8 2E			cmp		eax, UPPER_LIMIT
- 000000DA  7F 02			jg		INPUT_ERROR
- 000000DC  EB 11			jmp		MATH
-
-
- 000000DE			INPUT_ERROR:													; Input numbers not in range JMP From: line-111 or 113
-
-				; Error Message for num outside 1-46
- 000000DE  BA 0000016C R		mov		edx, OFFSET	errPrompt
- 000000E3  E8 00000000 E		call	WriteString
- 000000E8  E8 00000000 E		call	CrLf
- 000000ED  EB C5			Jmp		START_FIB											; After error message JMP To: line-99 to request numbers again
+				; Error test for int between [-88, -55] or [-40, -1]			; Success JMP To: line-162 or Fail JMP To: line-152
+ 000000CE  A1 0000023D R		mov		eax, numInput
+ 000000D3  83 F8 A8			cmp		eax, LIMIT_NEG_88
+ 000000D6  7C 29			jl		INPUT_ERROR
+ 000000D8  83 F8 FF			cmp		eax, LIMIT_NEG_1
+ 000000DB  7F 24			jg		INPUT_ERROR
+ 000000DD  83 F8 D8			cmp		eax, LIMIT_NEG_40
+ 000000E0  7C 07			jl		LOWER_RANGE_TEST
+ 000000E2  83 F8 C9			cmp		eax, LIMIT_NEG_55
+ 000000E5  7F 0E			jg		HIGHER_RANGE_TEST
+ 000000E7  EB 2E			jmp		MATH
 
 
- 000000EF			MATH:															; JMP From: line-114 - Input tests pass  ---  Start Math section
+ 000000E9			LOWER_RANGE_TEST:
 
-				; Print base case of fibCount = 1
- 000000EF  E8 00000000 E		call	CrLf
- 000000F4  C7 05 0000020F R		mov		fibPrev, 0
+				; Second test to invalidate (-56 -> -41)
+ 000000E9  A1 0000023D R		mov		eax, numInput
+ 000000EE  83 F8 C9			cmp		eax, LIMIT_NEG_55
+ 000000F1  7F 0E			jg		INPUT_ERROR
+ 000000F3  EB 22			jmp		MATH
+
+
+ 000000F5			HIGHER_RANGE_TEST:
+
+				; Second test to invalidate (-56 -> -41)
+ 000000F5  A1 0000023D R		mov		eax, numInput
+ 000000FA  83 F8 D8			cmp		eax, LIMIT_NEG_40
+ 000000FD  7C 02			jl		INPUT_ERROR
+ 000000FF  EB 16			jmp		MATH
+
+
+ 00000101			INPUT_ERROR:													; Input numbers not in range JMP From: line-124,126,139,148 
+
+				; Error Message for num outside [-88, -55] or [-40, -1]
+ 00000101  E8 00000000 E		call	CrLf
+ 00000106  BA 00000112 R		mov		edx, OFFSET	errPrompt
+ 0000010B  E8 00000000 E		call	WriteString
+ 00000110  E8 00000000 E		call	CrLf
+ 00000115  EB 8E			Jmp		MAIN_LOOP											; After error message JMP To: line-109 to request numbers again
+
+
+ 00000117			MATH:															; JMP From: line-131,140,149 - Input tests pass  ---  Start Math section
+
+				; Increment valid count and create sum
+ 00000117  FF 05 00000241 R		inc		validCount
+ 0000011D  A1 0000023D R		mov		eax, numInput
+ 00000122  03 05 0000024D R		add		eax, numSum
+ 00000128  A3 0000024D R		mov		numSum, eax
+
+				; Process lowest number
+ 0000012D  A1 0000023D R		mov		eax, numInput
+ 00000132  3B 05 00000245 R		cmp		eax, numLowest
+ 00000138  7C 28			jl		MIN_NUM												; New min detected JMP To: line-204
+
+
+ 0000013A			MATH_HI_CHK:
+
+				; Process highest number
+ 0000013A  3B 05 00000249 R		cmp		eax, numHighest
+ 00000140  7F 27			jg		MAX_NUM												; New max detected JMP To: line-211
+
+
+ 00000142			CONTINUE_MATH:
+
+				; Process the average of the numbers
+ 00000142  A1 0000024D R		mov		eax, numSum
+ 00000147  99				cdq
+ 00000148  8B 1D 00000241 R		mov		ebx, validCount
+ 0000014E  F7 FB			idiv	ebx
+ 00000150  A3 00000251 R		mov		numAvg, eax
+
+				; Quotient / 2 and compared to remainder
+ 00000155  D1 EB			shr		ebx, 1
+ 00000157  F7 DA			neg		edx
+ 00000159  3B D3			cmp		edx, ebx
+ 0000015B  7F 13		 	jg		ROUND_UP											; Remainder > .5 JMP To: line-218
+
+
+ 0000015D			RETURN_ROUND:
+				; Current rounded avg created
+ 0000015D  E9 FFFFFF43			jmp		MAIN_LOOP											; Request the next number JMP To: line-109
+
+
+ 00000162			MIN_NUM:
+
+				; Swap current number to lowest entered value
+ 00000162  A3 00000245 R		mov		numLowest, eax
+ 00000167  EB D1			jmp		MATH_HI_CHK											; Return to processing JMP To: line-176
+
+
+ 00000169			MAX_NUM:
+
+				; Swap current number to highest entered value
+ 00000169  A3 00000249 R		mov		numHighest, eax
+ 0000016E  EB D2			jmp		CONTINUE_MATH										; Return to processing JMP To: line-183
+
+
+ 00000170			ROUND_UP:
+
+				; Round up > 0.5 remainder
+ 00000170  FF 0D 00000251 R		dec		numAvg
+ 00000176  EB E5			jmp		RETURN_ROUND
+
+
+ 00000178			NO_PRINT:														; Test for any valid entries JMP From: line-119
+
+				; If end before any entries
+ 00000178  A1 00000241 R		mov		eax, validCount 
+ 0000017D  83 F8 00			cmp		eax, 0
+ 00000180  7F 19			jg		PRINT												; Valid entries JMP To: line-233
+ 00000182  E8 00000000 E		call	CrLf
+ 00000187  BA 00000122 R		mov		edx, OFFSET noPrompt
+ 0000018C  E8 00000000 E		call	WriteString
+ 00000191  E8 00000000 E		call	CrLf
+ 00000196  E9 0000008C			jmp		QUIT												; No valid input JMP To: line-274
+
+
+ 0000019B			PRINT: 
+
+				; Print the number of valid numbers
+ 0000019B  E8 00000000 E		call	CrLf
+ 000001A0  BA 00000136 R		mov		edx, OFFSET validPmt1
+ 000001A5  E8 00000000 E		call	WriteString
+ 000001AA  A1 00000241 R		mov		eax, validCount
+ 000001AF  E8 00000000 E		call	WriteDec
+ 000001B4  BA 00000143 R		mov		edx, OFFSET validPmt2
+ 000001B9  E8 00000000 E		call	WriteString
+
+				; Print the lowest number
+ 000001BE  E8 00000000 E		call	CrLf
+ 000001C3  BA 00000170 R		mov		edx, OFFSET minPrompt
+ 000001C8  E8 00000000 E		call	WriteString
+ 000001CD  A1 00000245 R		mov		eax, numLowest
+ 000001D2  E8 00000000 E		call	WriteInt
+
+				; Print the highest number
+ 000001D7  E8 00000000 E		call	CrLf
+ 000001DC  BA 00000153 R		mov		edx, OFFSET maxPrompt
+ 000001E1  E8 00000000 E		call	WriteString
+ 000001E6  A1 00000249 R		mov		eax, numHighest
+ 000001EB  E8 00000000 E		call	WriteInt
+
+				; Print the sum valid numbers
+ 000001F0  E8 00000000 E		call	CrLf
+ 000001F5  BA 0000018D R		mov		edx, OFFSET sumPrompt
+ 000001FA  E8 00000000 E		call	WriteString
+ 000001FF  A1 0000024D R		mov		eax, numSum
+ 00000204  E8 00000000 E		call	WriteInt
+
+				; Print the average of numbers
+ 00000209  E8 00000000 E		call	CrLf
+ 0000020E  BA 000001AF R		mov		edx, OFFSET avgPrompt
+ 00000213  E8 00000000 E		call	WriteString
+ 00000218  A1 00000251 R		mov		eax, numAvg
+ 0000021D  E8 00000000 E		call	WriteInt
+ 00000222  E8 00000000 E		call	CrLf
+
+
+ 00000227			QUIT:
+
+				; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-293 or Restart JMP To: line-109
+ 00000227  E8 00000000 E		call	CrLf
+ 0000022C  BA 000001C7 R		mov		edx, OFFSET	quitPrompt
+ 00000231  E8 00000000 E		call	WriteString
+ 00000236  E8 00000000 E		call	ReadInt
+ 0000023B  83 F8 01			cmp		eax, 1
+ 0000023E  74 37			je		FINISH
+
+				; If restarting then variables are reset
+ 00000240  C7 05 00000241 R		mov		validCount, 0
 	   00000000
- 000000FE  C7 05 00000213 R		mov		fibOut, 1
-	   00000001
- 00000108  A1 00000213 R		mov		eax, fibOut
- 0000010D  8B 0D 0000020B R		mov		ecx, fibCount
- 00000113  C7 05 00000217 R		mov		[colCount], 0
+ 0000024A  C7 05 0000024D R		mov		numSum, 0
 	   00000000
- 0000011D  C7 05 0000021B R		mov		[rowCount], 0
+ 00000254  C7 05 00000251 R		mov		numAvg, 0
 	   00000000
- 00000127  49				dec		ecx
- 00000128  E8 00000000 E		call	WriteDec
- 0000012D  83 3D 0000020B R		cmp		fibCount, 1
-	   01
- 00000134  74 6C			je		QUIT												; Base case of fibCount = 1 to quit prompt JMP To: line-185
-
-
- 00000136			FIB_LOOP:														; JMP From: line-172 to loop through Fib sequence
-
-				; Use spacing constant to format Fib output						; Print spacing between terms
- 00000136  B0 09			mov		al, SPACING
- 00000138  E8 00000000 E		call	WriteChar
- 0000013D  E8 00000000 E		call	WriteChar
- 00000142  83 3D 0000021B R		cmp		rowCount, 7											; Only print 2 tabs for rowCount 7+ (format columns)
-	   07
- 00000149  7D 05			jge		COL_FORMAT
- 0000014B  E8 00000000 E		call	WriteChar											; Print 3 tabs for rowCount 0-6 (format columns)
-
-
- 00000150			COL_FORMAT:														; JMP From: line-149 for 2 tab rows 7 and above (formatting columns)
-
-				; Loop for values above fibCount = 1
- 00000150  A1 0000020F R		mov		eax, fibPrev
- 00000155  8B 1D 00000213 R		mov		ebx, fibOut
- 0000015B  89 1D 0000020F R		mov		fibPrev, ebx
- 00000161  03 C3			add		eax, ebx
- 00000163  A3 00000213 R		mov		fibOut, eax
- 00000168  FF 05 00000217 R		inc		[colCount]
- 0000016E  83 3D 00000217 R		cmp		colCount, 5
-	   05
- 00000175  74 14			je		NEW_LINE
-
-
- 00000177			PRINT:															; JMP From: line-182 after newline added
-
-				; Print Fib term and loop until fibCount reached
- 00000177  A1 00000213 R		mov		eax, fibOut
- 0000017C  E8 00000000 E		call	WriteDec
- 00000181  3B 0D 0000020B R		cmp		ecx, fibCount
- 00000187  E2 AD			Loop	FIB_LOOP
- 00000189  EB 17			jmp		QUIT
-
-
- 0000018B			NEW_LINE:														; JMP From: line-163 for newline
-
-				; Newline and incement rowcount and rezero colCount
- 0000018B  E8 00000000 E		call	CrLf
- 00000190  FF 05 0000021B R		inc		[rowCount]
- 00000196  C7 05 00000217 R		mov		colCount, 0
-	   00000000
- 000001A0  EB D5			jmp		PRINT												; JMP To: line-166 to continue printing
-
-
- 000001A2			QUIT:
-
-				; Prompt the user to press 1 to quit or 2 to restart			; Quit JMP To: line-198 or Restart JMP To: line-99
- 000001A2  E8 00000000 E		call	CrLf
- 000001A7  E8 00000000 E		call	CrLf
- 000001AC  BA 00000197 R		mov		edx, OFFSET	quitPrompt
- 000001B1  E8 00000000 E		call	WriteString
- 000001B6  E8 00000000 E		call	ReadInt
- 000001BB  83 F8 01			cmp		eax, 1
- 000001BE  74 05			je		FINISH
- 000001C0  E9 FFFFFEEF			jmp		START_FIB
+ 0000025E  C7 05 00000245 R		mov		numLowest, LIMIT_NEG_1
+	   FFFFFFFF
+ 00000268  C7 05 00000249 R		mov		numHighest, LIMIT_NEG_88
+	   FFFFFFA8
+ 00000272  E9 FFFFFE2E			jmp		MAIN_LOOP
 					
 
- 000001C5			FINISH:															; JMP From: line-194 to finish
+ 00000277			FINISH:															; JMP From: line-283 to finish
 
 				; Say "Good-bye"												; Print the final message when 1 entered
- 000001C5  E8 00000000 E		call	CrLf
- 000001CA  BA 000001BD R		mov		edx, OFFSET byePrompt1
- 000001CF  E8 00000000 E		call	WriteString
- 000001D4  E8 00000000 E		call	CrLf
- 000001D9  BA 000001DF R		mov		edx, OFFSET byePrompt2
- 000001DE  E8 00000000 E		call	WriteString
- 000001E3  BA 000001EA R		mov		edx, OFFSET userName
- 000001E8  E8 00000000 E		call	WriteString
- 000001ED  BA 000001BB R		mov		edx, OFFSET	bangSym
- 000001F2  E8 00000000 E		call	WriteString
- 000001F7  E8 00000000 E		call	CrLf
+ 00000277  E8 00000000 E		call	CrLf
+ 0000027C  BA 000001EF R		mov		edx, OFFSET byePrompt1
+ 00000281  E8 00000000 E		call	WriteString
+ 00000286  E8 00000000 E		call	CrLf
+ 0000028B  BA 00000211 R		mov		edx, OFFSET byePrompt2
+ 00000290  E8 00000000 E		call	WriteString
+ 00000295  BA 0000021C R		mov		edx, OFFSET userName
+ 0000029A  E8 00000000 E		call	WriteString
+ 0000029F  BA 000001EB R		mov		edx, OFFSET	bangSym
+ 000002A4  E8 00000000 E		call	WriteString
+ 000002A9  E8 00000000 E		call	CrLf
 					exit														; Exit to operating system
- 000001FC  6A 00	   *	    push   +000000000h
- 000001FE  E8 00000000 E   *	    call   ExitProcess
+ 000002AE  6A 00	   *	    push   +000000000h
+ 000002B0  E8 00000000 E   *	    call   ExitProcess
 
- 00000203			main ENDP
+ 000002B5			main ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.24.28315.0	    01/27/20 23:40:56
-/Program 3                 Program2_wrighada.as		     Symbols 2 - 1
+Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/05/20 14:54:03
+/Program 3                 Program3_wrighada.as		     Symbols 2 - 1
 
 
 
@@ -428,8 +533,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000021F Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000203 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000255 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000002B5 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -536,16 +641,22 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000203 Public STDCALL
-  START_FIB  . . . . . . . . . .	L Near	 000000B4 _TEXT	
-  INPUT_ERROR  . . . . . . . . .	L Near	 000000DE _TEXT	
-  MATH . . . . . . . . . . . . .	L Near	 000000EF _TEXT	
-  FIB_LOOP . . . . . . . . . . .	L Near	 00000136 _TEXT	
-  COL_FORMAT . . . . . . . . . .	L Near	 00000150 _TEXT	
-  PRINT  . . . . . . . . . . . .	L Near	 00000177 _TEXT	
-  NEW_LINE . . . . . . . . . . .	L Near	 0000018B _TEXT	
-  QUIT . . . . . . . . . . . . .	L Near	 000001A2 _TEXT	
-  FINISH . . . . . . . . . . . .	L Near	 000001C5 _TEXT	
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000002B5 Public STDCALL
+  MAIN_LOOP  . . . . . . . . . .	L Near	 000000A5 _TEXT	
+  LOWER_RANGE_TEST . . . . . . .	L Near	 000000E9 _TEXT	
+  HIGHER_RANGE_TEST  . . . . . .	L Near	 000000F5 _TEXT	
+  INPUT_ERROR  . . . . . . . . .	L Near	 00000101 _TEXT	
+  MATH . . . . . . . . . . . . .	L Near	 00000117 _TEXT	
+  MATH_HI_CHK  . . . . . . . . .	L Near	 0000013A _TEXT	
+  CONTINUE_MATH  . . . . . . . .	L Near	 00000142 _TEXT	
+  RETURN_ROUND . . . . . . . . .	L Near	 0000015D _TEXT	
+  MIN_NUM  . . . . . . . . . . .	L Near	 00000162 _TEXT	
+  MAX_NUM  . . . . . . . . . . .	L Near	 00000169 _TEXT	
+  ROUND_UP . . . . . . . . . . .	L Near	 00000170 _TEXT	
+  NO_PRINT . . . . . . . . . . .	L Near	 00000178 _TEXT	
+  PRINT  . . . . . . . . . . . .	L Near	 0000019B _TEXT	
+  QUIT . . . . . . . . . . . . .	L Near	 00000227 _TEXT	
+  FINISH . . . . . . . . . . . .	L Near	 00000277 _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -637,7 +748,10 @@ KEY_EVENT  . . . . . . . . . . .	Number	 00000001h
 KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
 LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
 LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
-LOWER_LIMIT  . . . . . . . . . .	Number	 00000001h   
+LIMIT_NEG_1  . . . . . . . . . .	Number	 -00000001h   
+LIMIT_NEG_40 . . . . . . . . . .	Number	 -00000028h   
+LIMIT_NEG_55 . . . . . . . . . .	Number	 -00000037h   
+LIMIT_NEG_88 . . . . . . . . . .	Number	 -00000058h   
 MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
 MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
 MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
@@ -677,7 +791,6 @@ ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
 SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
 SHIFT_MASK . . . . . . . . . . .	Number	 00000010h   
 SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h   
-SPACING  . . . . . . . . . . . .	Number	 00000009h   
 STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
 STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
 STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
@@ -685,7 +798,6 @@ SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
 TAB  . . . . . . . . . . . . . .	Number	 00000009h   
 TRUE . . . . . . . . . . . . . .	Number	 00000001h   
 TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
-UPPER_LIMIT  . . . . . . . . . .	Number	 0000002Eh   
 VK_11  . . . . . . . . . . . . .	Number	 000000BDh   
 VK_12  . . . . . . . . . . . . .	Number	 000000BBh   
 VK_ADD . . . . . . . . . . . . .	Number	 0000006Bh   
@@ -767,27 +879,22 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
-bangSym  . . . . . . . . . . . .	Byte	 000001BB _DATA	
+avgPrompt  . . . . . . . . . . .	Byte	 000001AF _DATA	
+bangSym  . . . . . . . . . . . .	Byte	 000001EB _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-byePrompt1 . . . . . . . . . . .	Byte	 000001BD _DATA	
-byePrompt2 . . . . . . . . . . .	Byte	 000001DF _DATA	
-colCount . . . . . . . . . . . .	DWord	 00000217 _DATA	
+byePrompt1 . . . . . . . . . . .	Byte	 000001EF _DATA	
+byePrompt2 . . . . . . . . . . .	Byte	 00000211 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
-errPrompt  . . . . . . . . . . .	Byte	 0000016C _DATA	
+errPrompt  . . . . . . . . . . .	Byte	 00000112 _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
-extCred1 . . . . . . . . . . . .	Byte	 0000003A _DATA	
-extCred2 . . . . . . . . . . . .	Byte	 0000006B _DATA	
-fibCount . . . . . . . . . . . .	DWord	 0000020B _DATA	
-fibOut . . . . . . . . . . . . .	DWord	 00000213 _DATA	
-fibPrev  . . . . . . . . . . . .	DWord	 0000020F _DATA	
-fibPrompt  . . . . . . . . . . .	Byte	 00000145 _DATA	
+extCred1 . . . . . . . . . . . .	Byte	 00000043 _DATA	
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
-instr1 . . . . . . . . . . . . .	Byte	 000000B4 _DATA	
-instr2 . . . . . . . . . . . . .	Byte	 000000E3 _DATA	
-instr3 . . . . . . . . . . . . .	Byte	 0000010E _DATA	
+instr1 . . . . . . . . . . . . .	Byte	 0000008A _DATA	
+instr2 . . . . . . . . . . . . .	Byte	 000000BB _DATA	
+instr3 . . . . . . . . . . . . .	Byte	 000000D8 _DATA	
 intro  . . . . . . . . . . . . .	Byte	 00000000 _DATA	
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
@@ -796,13 +903,26 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-programmer . . . . . . . . . . .	Byte	 00000020 _DATA	
-quitPrompt . . . . . . . . . . .	Byte	 00000197 _DATA	
+maxPrompt  . . . . . . . . . . .	Byte	 00000153 _DATA	
+minPrompt  . . . . . . . . . . .	Byte	 00000170 _DATA	
+noPrompt . . . . . . . . . . . .	Byte	 00000122 _DATA	
+numAvg . . . . . . . . . . . . .	DWord	 00000251 _DATA	
+numHighest . . . . . . . . . . .	DWord	 00000249 _DATA	
+numInput . . . . . . . . . . . .	DWord	 0000023D _DATA	
+numLowest  . . . . . . . . . . .	DWord	 00000245 _DATA	
+numPrompt  . . . . . . . . . . .	Byte	 000000FE _DATA	
+numSum . . . . . . . . . . . . .	DWord	 0000024D _DATA	
+programmer . . . . . . . . . . .	Byte	 00000029 _DATA	
+quitPrompt . . . . . . . . . . .	Byte	 000001C7 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-rowCount . . . . . . . . . . . .	DWord	 0000021B _DATA	
-userGreet  . . . . . . . . . . .	Byte	 000000AC _DATA	
-userName . . . . . . . . . . . .	Byte	 000001EA _DATA	
-userPrompt . . . . . . . . . . .	Byte	 00000099 _DATA	
+space  . . . . . . . . . . . . .	Byte	 000001ED _DATA	
+sumPrompt  . . . . . . . . . . .	Byte	 0000018D _DATA	
+userGreet  . . . . . . . . . . .	Byte	 00000082 _DATA	
+userName . . . . . . . . . . . .	Byte	 0000021C _DATA	
+userPrompt . . . . . . . . . . .	Byte	 0000006F _DATA	
+validCount . . . . . . . . . . .	DWord	 00000241 _DATA	
+validPmt1  . . . . . . . . . . .	Byte	 00000136 _DATA	
+validPmt2  . . . . . . . . . . .	Byte	 00000143 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
