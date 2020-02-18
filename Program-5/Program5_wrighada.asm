@@ -1,75 +1,115 @@
 TITLE Program 5                 Program5_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-17-2020
+; Last Modified:				2-18-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               5  
 ; Due Date:						3-1-2020
-; Description:					Assembly program which 
+; Description:					Assembly program which creates an array of 
+;								200 random numbers between 10 - 29 and then
+;								prints the array. Then, it sorts the array,
+;								it calculates and prints the median value, 
+;								it prints the sorted array, it calculates
+;								the occurance of the 20 numbers in the array,
+;								and it prints the array of number counts.
 
 
 INCLUDE Irvine32.inc
 
 
-; Constant definitions
+;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
-MIN_NUM = 1																			; Constant holding the lowest possbie value for input
-MAX_NUM = 400																		; Constant holding the highest possible value for input
+ARRAY_SIZE = 200																	; Constant holding the highest possible value for input
+RANGE_LO = 10																		; Constant holding the lowest possible random num in array
+RANGE_HI = 29																		; Constant holding the highest possible random num in array
+
+PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
+PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
+PARAM_3 EQU [ebp + 16]																; Explicit stack offset for parameter 3
+PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
+PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
+PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
+PARAM_7 EQU [ebp + 32]																; Explicit stack offset for parameter 7
 
 
-; Variable definitions
-
-.data
-intro		BYTE	"Program-4 -- Composite Numbers", 0
-programmer	BYTE	"Programmed by Adam Wright", 0
-extCred1	BYTE	"**EC-1: Align the output columns.", 0
-userPrompt	BYTE	"What's your name? ", 0
-userGreet	BYTE	"Hello, ", 0
-instr1		BYTE	"Enter the number of composite numbers ", 0
-instr2		BYTE	"you would like to see.", 0
-instr3		BYTE	"I can print up to 400 composites.", 0
+.data																				; VARIABLE DEFINITIONS
+intro		BYTE	"** Program-5 -- Array Sorting **", 0
+programmer	BYTE	"** Programmed by Adam Wright  **", 0
+instr1		BYTE	"This program generates 200 random numbers in the range ", 0 
+instr2		BYTE	"[10 ... 29], displays the original list, ", 0
+instr3		BYTE	"sorts the list, displays the median value, displays ", 0 
+instr4		BYTE	"the list sorted in ascending order, then ", 0
+instr5		BYTE	"displays the number of instances of each generated value.", 0
 numPrompt	BYTE	"Enter the number of composites to display [1 .. 400]: ", 0
 errPrompt	BYTE	"Number Invalid!", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
-space1		BYTE	"     ", 0
-space2		BYTE	"    ", 0
-space3		BYTE	"   ", 0
-byePrompt1	BYTE	"Results certified by Adam Wright.", 0
-byePrompt2	BYTE	"Good-bye!", 0
+byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
+array		DWORD	200 DUP(?)														; Empty array of DWORDS to hold the number array
+numCounts	DWORD	20 DUP(?)														; Empty array 
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
-numCheck	DWORD	0																; Integer representing a bool for whether the user number is in range (1 is in range)
-compCheck	DWORD	1																; Integer representing a bool for whether a number is a composite (1 is composite)
-numInput	DWORD	?																; Integer holding the user's input number
+curRand		DWORD	?																; Integer holding the current random number
 curVal		DWORD	4																; Integer holding the composite to be checked and printed
-colNum		DWORD	0																; Integer counting the current column number
-numPrinted	DWORD	0																; Integer counting the amount of printed numbers
+median		DWORD	0																; Integer to receive the calculated median
 
-
-; Executable instructions
-
-.code  
+																					
+.code																				; EXECUTABLE INSTRUCTIONS
 main PROC
 
-; Introduce title, programmer, and extra credit options
+; Seed the Irvine library random function
+	call	Randomize
+
+; Introduce title, programmer, and instructions
+	push	OFFSET instr5
+	push	OFFSET instr4
+	push	OFFSET instr3
+	push	OFFSET instr2
+	push	OFFSET instr1
+	push	OFFSET programmer
+	push	OFFSET intro
 	call	introduction
 
-MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-73
+MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 
-; Prompt for the number of composites
-	call	getUserData
+; Fill the array with random numbers between 10-29
+	push	ARRAY_SIZE
+	push	RANGE_HI
+	push	RANGE_LO
+	push	OFFSET array
+	call	fillArray
 
-; Calculate and print composites
-	call	showComposites
+; Print the unsorted array
+	call	displayList
+
+; Sort the array from low to high
+	call	sortList
+
+; Calculate and print the median value
+	call	displayMedian
+
+; Print the sorted array
+	call	displayList
+
+; Calculate number occurances 10-19
+	call	countList
+
+; Print the number counts 10-29
+	call	displayList
 
 ; Ask if the user wants to quit
-	call	quit
+	push	OFFSET quitPrompt
+	call	quit																	; Returns quitVal in eax
+	mov		quitVal, eax
+
+; Reset variables for potential next running
+;	mov		median, 0
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
-	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-60
+	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-
 
-; Function that says "Good-bye"	
+; Function that says "Good-bye"
+	push	OFFSET byePrompt
 	call	farewell
 
 ; Exit to operating system
@@ -77,293 +117,197 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-73
 
 main ENDP
 
-
-; Procedure definitions
-
-;------------------------------------------------------------
+																					
+;------------------------------------------------------------------------			; PROCEDURE DEFINITIONS
 ; introduction
 ;
 ; Description:       Prints the Introductory message
-; Pre-conditions:	 none
+; Pre-conditions:	 4 string pointers pushed onto stack
 ; Post-conditions:	 none
+; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
+;					 PARAM_3: OFFSET instr1, PARAM_4: OFFSET instr2
+;					 PARAM_5: OFFSET instr3, PARAM_6: OFFSET instr4
+;					 PARAM_7: OFFSET instr5
 ; Registers changed: edx
-;------------------------------------------------------------
+;------------------------------------------------------------------------
 
 introduction PROC
 
-; Introduce title, programmer, and extra credit options
+; Introduce title, programmer
 	call	CrLf
-	mov		edx, OFFSET intro
+	push	ebp
+	mov		ebp, esp
+	mov		edx, PARAM_1
 	call	WriteString
 	call	CrLf
-	mov		edx, OFFSET programmer
-	call	WriteString
-	call	CrLf
-	call	CrLf
-	mov		edx, OFFSET extCred1
+	mov		edx, PARAM_2
 	call	WriteString
 	call	CrLf
 	call	CrLf
 
-; Print the instructions
-	mov		edx, OFFSET instr1
+; Print the instructions with formatting for MSVS window width
+	mov		edx, PARAM_3
 	call	WriteString
-	mov		edx, OFFSET instr2
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET instr3
+	mov		edx, PARAM_4
 	call	WriteString
 	call	CrLf
-
-	ret
+	mov		edx, PARAM_5
+	call	WriteString
+	mov		edx, PARAM_6
+	call	WriteString
+	call	CrLf
+	mov		edx, PARAM_7
+	call	WriteString
+	call	CrLf
+	pop		ebp
+	ret		28
 
 introduction ENDP
 
 
 ;------------------------------------------------------------------------------
-; getUserData
+; fillArray
 ;
-; Description:       Gets the number of composites to be displayed
-; Pre-conditions:	 none
-; Post-conditions:	 validated number of composites stored in numInput
+; Description:       Fill 200 numbers each between 10-29
+; Pre-conditions:	 array, LO range, HI range, and ARRAY_SIZE on stack
+; Post-conditions:	 array filled with 200 values in range 10-29
+; Parameters:		 PARAM_1: OFFSET array, PARAM_2: RANGE_LO (value)
+;					 PARAM_3: RANGE_HI (value) PARAM_4: ARRAY_SIZE (value)
 ; Registers changed: edx, eax
 ;------------------------------------------------------------------------------
 
-getUserData PROC
+fillArray PROC
 
-RE_RUN:
+; Set up
+	push	ebp
+	mov		ebp, esp
 
-; Prompt for user value and call validate proc
-	call	CrLf
-	mov		edx, OFFSET numPrompt
-	call	WriteString
-	call	ReadInt
-	mov		numInput, eax
-	call	validate
 
-; Check the bool and pass or print error message
-	cmp		numCheck, 1
-	je		TEST_EXIT																; User num passes validation JE To: line-156
-	call	CrLf
-	mov		edx, OFFSET errPrompt
-	call	WriteString
-	call	CrLf
-	jmp		RE_RUN																	; Retry when user num fails validation JMP To: line-137
+	pop		ebp
+	ret		16
 
-TEST_EXIT:
-
-	ret
-
-getUserData ENDP
+fillArray ENDP
 
 
 ;------------------------------------------------------------------------------
-; validate
+; sortList
 ;
-; Description:        Validates the user's entered value to be in range 1-400
-; Pre-conditions:	  potentially in range number of composites in numInput
-; Post-conditions:	  numCheck set to 1 for passing or 0 for failure
+; Description:        Sorts array from low to high
+; Pre-conditions:	  array and ARRAY_SIZE on stack
+; Post-conditions:	  array sorted from low to high
+; Parameters:		  
 ; Registers changed:  eax
 ;------------------------------------------------------------------------------
 
-validate PROC
+sortList PROC
 
-; Test that the numInput is between 1-400 inclusive
-	mov		numCheck, 0
-	mov		eax, numInput
-	cmp		eax, MIN_NUM
-	jge		HIGH_CHECK																; Pass low range move to high test JGE To: line-181
-	jmp		TEST_EXIT																; Failed low range JMP To: line-193
-
-HIGH_CHECK:
-	
-; Check the value against max of range
-	cmp		eax, MAX_NUM
-	jle		TEST_PASS																; High range passed JLE To: line-188
-	jmp		TEST_EXIT																; Test failed JMP To: line-193
-
-TEST_PASS:																			; Both tests passed JLE From: line-185
-
-; Set numCheck to 1 because it passed, else it stays 0 for fail
-	mov		numCheck, 1
-
-TEST_EXIT:
+	call	exchangeElements
 
 	ret
 
-validate ENDP
+sortList ENDP
 
 
 ;------------------------------------------------------------------------------
-; showComposites
+; exchangeElements
 ;
-; Description:        Prints the composite numbers for the selected range
-; Pre-conditions:	  ColNum == 0, curVal == 4, numInput in range
-; Post-conditions:	  all composite numbers in user's range are printed
-; Registers changed:  eax, ecx, edx
+; Description:        Swaps two values by reference
+; Pre-conditions:	  Two array indexes on stack
+; Post-conditions:	  Paramater 1 and 2 are swapped
+; Parameters:		  
+; Registers changed:  eax, ebx
 ;------------------------------------------------------------------------------
 
-showComposites PROC
+exchangeElements PROC
 
-; Loop from 1 - the user entered number
-	call	CrLf
-	mov		colNum, 0
-	mov		ecx, numInput
-
-LOOP_UNTIL_NUM:																		; Loop using LOOP instruction until inputNum reached From: line-272
-
-COMPOSITE_LOOP:
-
-; Call isComposite on current num
-	mov		eax, curVal
-	mov		compCheck, 0
-	call	isComposite
-
-; Check if isComposite passed
-	cmp		compCheck, 1
-	jne		COMPOSITE_LOOP															; Not a composite then skip JMP To: line-218
-
-; Print valid number and check length for spaces
-	inc		numPrinted
-	mov		eax, curVal
-	call	WriteDec
-	cmp		eax, 9
-	jle		SPACE_1                                                                 ; 1 digit number JLE To: line-239
-	cmp		eax, 99
-	jle		SPACE_2                                                                 ; 2 digit number JLE To: line-246
-	jmp		SPACE_3                                                                 ; 3 digit number JMP To: line-253
-
-SPACE_1:
-
-; Print spaces (1 digit 5 spaces)
-	mov		edx, OFFSET space1
-	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
-
-SPACE_2:
-
-; Print spaces (2 digit 4 spaces)
-	mov		edx, OFFSET space2
-	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
-
-SPACE_3:
-
-; Print spaces (3 digit 3 spaces)
-	mov		edx, OFFSET space3
-	call	WriteString
-	jmp		COLUMN_CHECK                                                            ; Space added JMP To: line-260
-
-COLUMN_CHECK:
-
-
-; Print 10 columns per line
-	inc		colNum
-	cmp		colNum, 10
-	je		LAST_COLUMN																; Check for last row before adding newline JE To: line-275 
-
-CONTINUE:
-
-; Complete an iteration or end loop
-	inc		curVal
-	loop	LOOP_UNTIL_NUM
-	jmp		AFTER_LOOP																; Loop completed JMP To: line-289													
-
-LAST_COLUMN:
-
-; Check for last row to skip newline
-	mov		eax, numInput
-	cmp		eax, numPrinted
-	je		CONTINUE																; Loop completed JMP To: line-289
-
-LOOP_COLUMNS:
-
-; Add a new line after 10 columns
-	call	CrLf
-	mov		colNum, 0
-	jmp		CONTINUE																; Continue after newline JMP To: line-268
-
-AFTER_LOOP:																			
+															
 
 	ret
 
-showComposites ENDP
+exchangeElements ENDP
 
 
 ;------------------------------------------------------------------------------
-; isComposite
+; displayMedian
 ;
-; Description:        Determines if a value is a composite number
+; Description:        Calculates and prints the median value of the array
 ; Pre-conditions:	  curVal contains 4, compCheck contains 0
-; Post-conditions:	  compCheck remains 0 for fail or set to 1 for pass
+; Post-conditions:	  Median printed to console
+; Parameters:		  
 ; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
 
-isComposite PROC
+displayMedian PROC
 
-CHECK_1:
 
-; Check n % (2 to i-1) == 0 (composite number)
-	mov		ebx, 2
-
-CHECK_1_LOOP:
-
-; Loop from 2 to n-1
-	mov		eax, curVal
-	sub		eax, 1
-	cmp		ebx, eax
-	jge		CHECK_2																	; Exit when loop reaches n-1 JGE To: line-336
-
-; Div and check remainder == 0 to pass
-	mov		eax, curVal
-	mov		edx, 0
-	div		ebx
-	cmp		edx, 0
-	je		PASS																	; Number is composite JE To: line-329
-	inc		ebx
-	jmp		CHECK_1_LOOP															; Loop again JMP To: line-312
-
-PASS:
-
-; Passed composite test (return true)
-	mov		compCheck, 1
 
 	ret
 
-CHECK_2:
+displayMedian ENDP
 
-; Number is prime (return false)
-	inc		curVal
+
+;------------------------------------------------------------------------------
+; displayList
+;
+; Description:        Print the array 20 numbers per line and two space columns
+; Pre-conditions:	  array and ARRAY_SIZE on stack
+; Post-conditions:	  array printed to console
+; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE
+; Registers changed:  eax, edx
+;------------------------------------------------------------------------------
+
+displayList PROC
+
+
 
 	ret
 
-isComposite ENDP
+displayList ENDP
+
+
+;------------------------------------------------------------------------------
+; countList
+;
+; Description:        Counts occurances of each number and prints them
+; Pre-conditions:	  
+; Post-conditions:	  20 number counts printed to console using displayList
+; Parameters:		  
+; Registers changed:  eax, ebx, edx
+;------------------------------------------------------------------------------
+
+countList PROC
+
+
+
+	ret
+
+countList ENDP
 
 
 ;------------------------------------------------------------------------------
 ; quit
 ;
 ; Description:        Prints the quit dialog
-; Pre-conditions:	  composite loop complete
-; Post-conditions:	  quitVal == 1 to quit or any other value to continue
+;					  quitVal == 1 to quit or any other value to continue
+; Pre-conditions:	  quitPrompt pushed onto stack
+; Post-conditions:	  quitVal stored in eax upon return
+; Parameters:		  PARAM_1: OFFSET quitPrompt
 ; Registers changed:  edx, eax
 ;------------------------------------------------------------------------------
 
 quit PROC
 
-; Prompt the user to press 1 to quit or 2 to restart
+; Set up message in edx
 	call	CrLf
-	call	CrLf
-	mov		edx, OFFSET	quitPrompt
+	push	ebp
+	mov		ebp, esp
+	mov		edx, PARAM_1
+
+; Prompt the user and return in eax
 	call	WriteString
 	call	ReadInt
-	mov		quitVal, eax
-
-; Reset variables for possible next running
-	mov		numPrinted, 0
-	mov		curVal, 4
-
-	ret
+	pop		ebp
+	ret		4
 
 quit ENDP
 
@@ -372,23 +316,25 @@ quit ENDP
 ; finish
 ;
 ; Description:        Prints the Goodbye message
-; Pre-conditions:	  quitVal == 1
+; Pre-conditions:	  byePrompt pushed onto stack
 ; Post-conditions:	  none
+; Parameters:		  PARAM_1: OFFSET byePrompt
 ; Registers changed:  edx
 ;------------------------------------------------------------------------------
 
 farewell PROC															
 
-; Say "Good-bye""
+; Set up message in edx
 	call	CrLf
-	mov		edx, OFFSET byePrompt1
-	call	WriteString
-	call	CrLf
-	mov		edx, OFFSET byePrompt2
-	call	WriteString
-	call	CrLf
+	push	ebp
+	mov		ebp, esp
+	mov		edx, PARAM_1
 
-	ret
+; Print the Goodbye message
+	call	WriteString
+	call	CrLf
+	pop		ebp
+	ret		4
 
 farewell ENDP
 
