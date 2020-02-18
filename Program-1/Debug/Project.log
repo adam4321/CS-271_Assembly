@@ -1,2 +1,2 @@
-﻿  Assembling Program1_wrighada.asm...
-  Project.vcxproj -> D:\code\cs-271\cs-271\Program-1\Debug\Project-1.exe
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(459,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project-1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Project.vcxproj -> D:\code\cs-271\cs-271_(premerge)\Program-1\Debug\Program-1.exe
