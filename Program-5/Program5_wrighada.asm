@@ -30,15 +30,17 @@ PARAM_3 EQU [ebp + 16]																; Explicit stack offset for parameter 3
 PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 
 
-.data																				; VARIABLE DEFINITIONS
-intro		BYTE	"** Program-5 -- Array Sorting **", 0dh, 0ah, 0
-programmer	BYTE	"** Programmed by Adam Wright  **", 0dh, 0ah, 0
+;  -------------------------------------------------------------------------------  ; VARIABLE DEFINITIONS
+
+.data																				
+intro		BYTE	"** Program-5 -- Array Sorting **", 0
+programmer	BYTE	"** Programmed by Adam Wright  **", 0
 instruct	BYTE	"This program generates 200 random numbers in the range "
 			BYTE	"[10 ... 29], displays the original list, ", 0dh, 0ah
 			BYTE	"sorts the list, displays the median value, displays "
 			BYTE	"the list sorted in ascending order, then ", 0dh, 0ah
 			BYTE	"displays the number of instances of each generated "
-			BYTE	"value.", 0dh, 0ah, 0
+			BYTE	"value.", 0
 unsortMsg	BYTE	"Your unsorted random numbers:", 0
 medianMsg	BYTE	"List Median:", 0
 sortMsg		BYTE	"Your sorted random numbers:", 0
@@ -51,8 +53,10 @@ numCounts	DWORD	20 DUP(?)														; Empty array
 median		DWORD	0																; Integer to receive the calculated median
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 
-																					
-.code																				; EXECUTABLE INSTRUCTIONS
+
+;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
+
+.code
 main PROC
 
 ; Seed the Irvine library random function
@@ -96,7 +100,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 
 ; Print the number counts 10-29
 	push	OFFSET listMsg
-	push	ARRAY_SIZE
+	push	20
 	push	OFFSET array
 	call	displayList
 
@@ -121,8 +125,10 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 
 main ENDP
 
-																					
-;------------------------------------------------------------------------			; PROCEDURE DEFINITIONS
+
+;  -------------------------------------------------------------------------------  ; PROCEDURE DEFINITIONS
+
+;------------------------------------------------------------------------------
 ; introduction
 ;
 ; Description:       Prints the Introductory message
@@ -131,7 +137,7 @@ main ENDP
 ; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 ;					 PARAM_3: OFFSET instruct
 ; Registers changed: edx, ebp, esp
-;------------------------------------------------------------------------
+;------------------------------------------------------------------------------
 
 introduction PROC
 
@@ -143,13 +149,16 @@ introduction PROC
 	call	WriteString
 
 ; Print the programmer message
+	call	CrLf
 	mov		edx, PARAM_2
 	call	WriteString
-	call	CrLf
 
 ; Print the instructions and finish
+	call	CrLf
+	call	CrLf
 	mov		edx, PARAM_3
 	call	WriteString
+	call	CrLf
 	pop		ebp
 	ret		3 * TYPE PARAM_1
 
@@ -196,16 +205,78 @@ ARRAY_FILL:
 fillArray ENDP
 
 
-;--------------------------------------------------------------------------------
+;------------------------------------------------------------------------------
+; displayList
+;
+; Description:        Print the array 20 numbers per line and two space columns
+; Pre-conditions:	  OFFSET array, ARRAY_SIZE, unsortMsg on stack
+; Post-conditions:	  array printed to console
+; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE 
+;					  PARAM_3: printing message (unsortMsg, sortMsg or listMsg)
+; Registers changed:  eax, edx
+;------------------------------------------------------------------------------
+
+displayList PROC
+
+; Set up array pointer and loops
+	push	ebp
+	mov		ebp, esp
+	mov		esi, PARAM_1
+	mov		ecx, PARAM_2
+	mov		ebx, 1
+
+; Print the unsortMsg
+	call	CrLf
+	mov		edx, PARAM_3
+	call	WriteString
+	call	CrLf
+
+PRINT_ARR_1:
+
+; Print the array
+	mov		eax, [esi]
+	call	WriteDec
+	mov		al, ' '
+	call	WriteChar
+	call	WriteChar
+	cmp		ebx, 20
+	je		PRINT_CRLF
+	inc		ebx
+
+PRINT_ARR_2:
+
+; Increment counters and check loop counter
+	add		esi, 4
+	loop	PRINT_ARR_1
+	jmp		FINISH_PRINT
+
+PRINT_CRLF:
+
+; Add a newline after 20 numbers
+	call	CrLf
+	mov		ebx, 1
+	jmp		PRINT_ARR_2
+
+FINISH_PRINT:
+
+; Exit after array printed
+	call	CrLf
+	pop		ebp
+	ret		3 * TYPE PARAM_1
+
+displayList ENDP
+
+
+;------------------------------------------------------------------------------
 ; sortList
 ;
-; Description:        Sorts array of 32 bit ints from low to high with bubblesort
-;					  from pg.375 of ed.7 Intel Assembly by Irvine
+; Description:        Sorts array of 32 bit ints from low to high with
+;					  bubblesort from pg.375 of ed.7 Intel Assembly by Irvine
 ; Pre-conditions:	  OFFSET array and ARRAY_SIZE on stack
 ; Post-conditions:	  array sorted from low to high
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE
 ; Registers changed:  eax, ecx, ebp, esi
-;--------------------------------------------------------------------------------
+;------------------------------------------------------------------------------
 
 sortList PROC
 
@@ -284,36 +355,6 @@ displayMedian PROC
 displayMedian ENDP
 
 
-;--------------------------------------------------------------------------------
-; displayList
-;
-; Description:        Print the array 20 numbers per line and two space columns
-; Pre-conditions:	  OFFSET array, ARRAY_SIZE, unsortMsg on stack
-; Post-conditions:	  array printed to console
-; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE 
-;					  PARAM_3: printing message (unsortMsg, sortMsg, or listMsg)
-; Registers changed:  eax, edx
-;--------------------------------------------------------------------------------
-
-displayList PROC
-
-; Set up
-	call	CrLf
-	push	ebp
-	mov		ebp, esp
-
-; Print the unsortMsg
-	mov		edx, PARAM_3
-	call	WriteString
-	call	CrLf
-
-; Exit after array printed
-	pop		ebp
-	ret		3 * TYPE PARAM_1
-
-displayList ENDP
-
-
 ;------------------------------------------------------------------------------
 ; countList
 ;
@@ -347,7 +388,6 @@ countList ENDP
 quit PROC
 
 ; Set up message in edx
-	call	CrLf
 	push	ebp
 	mov		ebp, esp
 	mov		edx, PARAM_1
