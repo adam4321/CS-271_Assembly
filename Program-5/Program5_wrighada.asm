@@ -181,7 +181,7 @@ fillArray PROC
 ; Set up array filling loop
 	push	ebp
 	mov		ebp, esp
-	mov		edi, PARAM_1
+	mov		esi, PARAM_1
 	mov		ecx, PARAM_4
 
 ARRAY_FILL:
@@ -194,8 +194,8 @@ ARRAY_FILL:
 	add		eax, PARAM_2
 
 ; Enter number into array
-	mov		[edi], eax
-	add		edi, TYPE array
+	mov		[esi], eax
+	add		esi, 4
 	loop	ARRAY_FILL
 
 ; Exit when array length is reached
@@ -281,38 +281,38 @@ displayList ENDP
 sortList PROC
 
 ; Set array loop to array address
-;	push	ebp
-;	mov		ebp, esp
-;	mov		ecx, PARAM_2
-;	dec		ecx						; decrement count by 1
+	push	ebp
+	mov		ebp, esp
+	mov		ecx, PARAM_2
+	dec		ecx						; decrement count by 1
 
 L1:
 
-;	push	ecx						; save outer loop count
-;	mov		esi, PARAM_1			; point to first value
+	push	ecx						; save outer loop count
+	mov		esi, PARAM_1			; point to first value
 
 L2:
 
-;	mov		eax, [esi]				; get array value
-;	cmp		[esi+4], eax			; compare a pair of values
-;	jg		L3						; if [ESI] <= [ESI+4], no exchange
+	mov		eax, [esi]				; get array value
+	cmp		[esi+4], eax			; compare a pair of values
+	jg		L3						; if [ESI] <= [ESI+4], no exchange
 
 ; Call swap function
-;	push	
-;	xchg	eax, [esi+4]			; exchange the pair
-;	mov		[esi], eax
+	;push	
+	xchg	eax, [esi+4]			; exchange the pair
+	mov		[esi], eax
 
 L3:
 
-;	add		esi, 4					; move both pointers forward
-;	loop	L2						; inner loop
-;	pop		ecx						; retrieve outer loop count
-;	loop	L1						; else repeat outer loop
+	add		esi, 4					; move both pointers forward
+	loop	L2						; inner loop
+	pop		ecx						; retrieve outer loop count
+	loop	L1						; else repeat outer loop
 
 L4:
 
-;	pop		ebp
-;	ret		2 * TYPE PARAM_1
+	pop		ebp
+	ret		2 * TYPE PARAM_1
 
 sortList ENDP
 
@@ -321,7 +321,7 @@ sortList ENDP
 ; exchangeElements
 ;
 ; Description:        Swaps two values by reference
-; Pre-conditions:	  Two array indexes on stack
+; Pre-conditions:	  Two array addresses pushed onto stack
 ; Post-conditions:	  Paramater 1 and 2 are swapped
 ; Parameters:		  PARAM_1: , PARM_2: 
 ; Registers changed:  eax, ebx
