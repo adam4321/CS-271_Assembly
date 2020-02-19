@@ -42,13 +42,13 @@ instruct	BYTE	"This program generates 200 random numbers in the range "
 			BYTE	"displays the number of instances of each generated "
 			BYTE	"value.", 0
 unsortMsg	BYTE	"Your unsorted random numbers:", 0
-medianMsg	BYTE	"List Median:", 0
+medianMsg	BYTE	"List Median: ", 0
 sortMsg		BYTE	"Your sorted random numbers:", 0
 listMsg		BYTE	"Your list of instances of each generated number, "
 			BYTE	"starting with the number of 10s:", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
-array		DWORD	200 DUP(?)														; Empty array of DWORDS to hold the number array
+array		DWORD	ARRAY_SIZE DUP(?)												; Empty array of DWORDS to hold the number array
 numCounts	DWORD	20 DUP(?)														; Empty array
 median		DWORD	0																; Integer to receive the calculated median
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
@@ -84,9 +84,14 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 	call	displayList
 
 ; Sort the array from low to high
+	push	ARRAY_SIZE
+	push	OFFSET array
 	call	sortList
 
 ; Calculate and print the median value
+	push	OFFSET medianMsg
+	push	ARRAY_SIZE
+	push	OFFSET array
 	call	displayMedian
 
 ; Print the sorted array
@@ -108,9 +113,6 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 	push	OFFSET quitPrompt
 	call	quit																	; Returns quitVal in eax
 	mov		quitVal, eax
-
-; Reset variables for potential next running
-;	mov		median, 0
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
@@ -184,7 +186,7 @@ fillArray PROC
 	mov		esi, PARAM_1
 	mov		ecx, PARAM_4
 
-ARRAY_FILL:
+ARRAY_FILL:																			; Loop
 
 ; Generate number between 10-29
 	mov		eax, PARAM_3
@@ -195,8 +197,8 @@ ARRAY_FILL:
 
 ; Enter number into array
 	mov		[esi], eax
-	add		esi, 4
-	loop	ARRAY_FILL
+	add		esi, TYPE DWORD
+	loop	ARRAY_FILL																; Loop
 
 ; Exit when array length is reached
 	pop		ebp
@@ -231,7 +233,7 @@ displayList PROC
 	call	WriteString
 	call	CrLf
 
-PRINT_ARR_1:
+PRINT_ARR_1:																		; jmp
 
 ; Print the array
 	mov		eax, [esi]
@@ -243,14 +245,14 @@ PRINT_ARR_1:
 	je		PRINT_CRLF
 	inc		ebx
 
-PRINT_ARR_2:
+PRINT_ARR_2:																		; jmp
 
 ; Increment counters and check loop counter
-	add		esi, 4
+	add		esi, TYPE DWORD
 	loop	PRINT_ARR_1
 	jmp		FINISH_PRINT
 
-PRINT_CRLF:
+PRINT_CRLF:																			; jmp
 
 ; Add a newline after 20 numbers
 	call	CrLf
@@ -298,9 +300,10 @@ L2:
 	jg		L3						; if [ESI] <= [ESI+4], no exchange
 
 ; Call swap function
-	;push	
-	xchg	eax, [esi+4]			; exchange the pair
-	mov		[esi], eax
+	;lea		edi, [esi+4]
+	;push	edi
+	;push	esi
+	call	exchangeElements
 
 L3:
 
@@ -323,15 +326,32 @@ sortList ENDP
 ; Description:        Swaps two values by reference
 ; Pre-conditions:	  Two array addresses pushed onto stack
 ; Post-conditions:	  Paramater 1 and 2 are swapped
-; Parameters:		  PARAM_1: , PARM_2: 
+; Parameters:		  PARAM_1: esi+4, PARM_2: esi 
 ; Registers changed:  eax, ebx
 ;------------------------------------------------------------------------------
 
 exchangeElements PROC
 
-															
+; Set up the
+	pushad
+	;push	ebp
+	mov		ebp, esp
+	
 
-	ret
+	;mov		eax, [PARAM_1]
+	;mov		ebx, [PARAM_2]
+	;mov		[PARAM_2], eax
+	;mov		[PARAM_1], ebx
+	
+	
+	mov		eax, [esi+4]
+	mov		ebx, [esi]
+	mov		[esi], eax
+	mov		[esi+4], ebx
+	
+	;pop ebp
+	popad
+	ret		2 * TYPE PARAM_1
 
 exchangeElements ENDP
 
@@ -342,15 +362,52 @@ exchangeElements ENDP
 ; Description:        Calculates and prints the median value of the array
 ; Pre-conditions:	  curVal contains 4, compCheck contains 0
 ; Post-conditions:	  Median printed to console
-; Parameters:		  PARAM_1: , PARM_2: 
+; Parameters:		  PARAM_1: OFFSET array, PARM_2: ARRAY_SIZE (value) 
+;					  PARAM_3: OFFSET medianMsg 
 ; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
 
 displayMedian PROC
+	push	ebp
+	mov		ebp, esp
 
+; Print the median message
+	mov		edx, PARAM_3
+	call	WriteString
 
+; Get index of middle elements
+	mov		edx, 0
+	mov		eax, [PARAM_2]
+	mov		ebx, 2
+	div		ebx
 
-	ret
+; Jump to even or odd calculation
+	cmp		edx, 0
+	jne		ODD_MEDIAN		
+
+EVEN_MEDIAN:
+
+; Get middle 2 elements (100 and 99)
+	mov		eax, PARAM_1
+	add		eax, 396
+	mov		ebx, [eax]
+	add		eax, 4
+	mov		eax, [eax]
+
+; Calculate the median (.5 rounds up)
+	add		eax, ebx
+	mov		ebx, 2
+	div		ebx
+	add		eax, edx
+	call	WriteDec
+	jmp		FINISH_MEDIAN
+
+ODD_MEDIAN:
+
+FINISH_MEDIAN:
+
+	pop		ebp
+	ret		3 * TYPE PARAM_1
 
 displayMedian ENDP
 
