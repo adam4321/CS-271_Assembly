@@ -23,6 +23,7 @@ INCLUDE Irvine32.inc
 ARRAY_SIZE = 200																	; Constant holding the highest possible value for input
 RANGE_LO = 10																		; Constant holding the lowest possible random num in array
 RANGE_HI = 29																		; Constant holding the highest possible random num in array
+COUNT_LIST_SIZE = 20																; Constant holding the size of the occurance list
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
@@ -50,7 +51,6 @@ quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 array		DWORD	ARRAY_SIZE DUP(?)												; Empty array of DWORDS to hold the number array
 numCounts	DWORD	20 DUP(?)														; Empty array
-median		DWORD	0																; Integer to receive the calculated median
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 
 
@@ -101,12 +101,16 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-
 	call	displayList
 
 ; Calculate number occurances 10-19
+	push	RANGE_LO
+	push	OFFSET numCounts
+	push	ARRAY_SIZE
+	push	OFFSET array
 	call	countList
 
 ; Print the number counts 10-29
 	push	OFFSET listMsg
-	push	20
-	push	OFFSET array
+	push	COUNT_LIST_SIZE
+	push	OFFSET numCounts
 	call	displayList
 
 ; Ask if the user wants to quit
@@ -272,8 +276,7 @@ displayList ENDP
 ;------------------------------------------------------------------------------
 ; sortList
 ;
-; Description:        Sorts array of 32 bit ints from low to high with
-;					  bubblesort from pg.375 of ed.7 Intel Assembly by Irvine
+; Description:        Sorts array of DWORD from low to high
 ; Pre-conditions:	  OFFSET array and ARRAY_SIZE on stack
 ; Post-conditions:	  array sorted from low to high
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE
@@ -326,7 +329,7 @@ sortList ENDP
 ; Description:        Swaps two values by reference
 ; Pre-conditions:	  Two array addresses pushed onto stack
 ; Post-conditions:	  Paramater 1 and 2 are swapped
-; Parameters:		  PARAM_1: esi+4, PARM_2: esi 
+; Parameters:		  PARAM_1: esi+4, PARAM_2: esi 
 ; Registers changed:  eax, ebx
 ;------------------------------------------------------------------------------
 
@@ -362,7 +365,7 @@ exchangeElements ENDP
 ; Description:        Calculates and prints the median value of the array
 ; Pre-conditions:	  curVal contains 4, compCheck contains 0
 ; Post-conditions:	  Median printed to console
-; Parameters:		  PARAM_1: OFFSET array, PARM_2: ARRAY_SIZE (value) 
+; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
 ;					  PARAM_3: OFFSET medianMsg 
 ; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
@@ -389,7 +392,7 @@ EVEN_MEDIAN:
 
 ; Get middle 2 elements (100 and 99)
 	mov		eax, PARAM_1
-	add		eax, 396
+	add		eax, 99 * TYPE DWORD
 	mov		ebx, [eax]
 	add		eax, 4
 	mov		eax, [eax]
@@ -403,6 +406,7 @@ EVEN_MEDIAN:
 	jmp		FINISH_MEDIAN
 
 ODD_MEDIAN:
+; The container is fixed as even, so this won't occur
 
 FINISH_MEDIAN:
 
@@ -418,15 +422,57 @@ displayMedian ENDP
 ; Description:        Counts occurances of each number and prints them
 ; Pre-conditions:	  
 ; Post-conditions:	  20 number counts printed to console using displayList
-; Parameters:		  
+; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
+;					  PARAM_3: OFFSET numCounts, PARAM_4: RANGE_LO (value)
 ; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
 
 countList PROC
 
+; Set up stack frame
+	push	ebp
+	mov		ebp, esp
+	mov		ebx, PARAM_4
+	mov		edi, [PARAM_3]
 
+START_LOOP:
 
-	ret
+; Initialize the outer loop
+	mov		esi, [PARAM_1]
+	mov		ecx, PARAM_2
+	mov		eax, 0
+	
+COUNT_LOOP:
+	cmp		ebx, [esi]
+	je		NUM_FOUND
+	add		esi, TYPE DWORD
+	loop	COUNT_LOOP
+	jmp		NEXT_NUMBER
+
+NUM_FOUND:
+
+; Loop through each value and count occurance
+	inc		eax
+	add		esi, TYPE DWORD
+	loop	COUNT_LOOP
+	jmp		NEXT_NUMBER
+
+NEXT_NUMBER:
+
+; Enter the count into occurance list
+	mov		[edi], eax
+	add		edi, TYPE DWORD
+
+; Increment the number to check for
+	inc		ebx
+	cmp		ebx, 30
+	je		FINISH_COUNT
+	jmp		START_LOOP
+
+FINISH_COUNT:
+
+	pop		ebp
+	ret		4 * TYPE PARAM_1
 
 countList ENDP
 
