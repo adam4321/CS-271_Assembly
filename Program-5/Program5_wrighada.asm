@@ -1,7 +1,7 @@
 TITLE Program 5                 Program5_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-18-2020
+; Last Modified:				2-20-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               5  
@@ -239,14 +239,14 @@ displayList PROC
 
 PRINT_ARR_1:																		; jmp
 
-; Print the array
+; Print a row of 20 numbers
 	mov		eax, [esi]
 	call	WriteDec
 	mov		al, ' '
 	call	WriteChar
 	call	WriteChar
 	cmp		ebx, 20
-	je		PRINT_CRLF
+	je		PRINT_CRLF																; jmp
 	inc		ebx
 
 PRINT_ARR_2:																		; jmp
@@ -254,16 +254,16 @@ PRINT_ARR_2:																		; jmp
 ; Increment counters and check loop counter
 	add		esi, TYPE DWORD
 	loop	PRINT_ARR_1
-	jmp		FINISH_PRINT
+	jmp		FINISH_PRINT															; jmp
 
 PRINT_CRLF:																			; jmp
 
 ; Add a newline after 20 numbers
 	call	CrLf
 	mov		ebx, 1
-	jmp		PRINT_ARR_2
+	jmp		PRINT_ARR_2																; jmp
 
-FINISH_PRINT:
+FINISH_PRINT:																		; jmp
 
 ; Exit after array printed
 	call	CrLf
@@ -289,34 +289,37 @@ sortList PROC
 	push	ebp
 	mov		ebp, esp
 	mov		ecx, PARAM_2
-	dec		ecx						; decrement count by 1
+	dec		ecx
 
-L1:
+OUTER_LOOP:																			; jmp
 
-	push	ecx						; save outer loop count
-	mov		esi, PARAM_1			; point to first value
+; Store ARRAY_SIZE -1 on the stack
+	push	ecx
+	mov		esi, PARAM_1
 
-L2:
+INNER_LOOP:																			; jmp
 
-	mov		eax, [esi]				; get array value
-	cmp		[esi+4], eax			; compare a pair of values
-	jg		L3						; if [ESI] <= [ESI+4], no exchange
+; Compare and swap or branch
+	mov		eax, [esi]
+	cmp		[esi+4], eax
+	jg		INCREMENT																; jmp
 
 ; Call swap function
-	;lea		edi, [esi+4]
-	;push	edi
-	;push	esi
+	add		esi, 4
+	push	esi
+	sub		esi, 4
+	push	esi
 	call	exchangeElements
 
-L3:
+INCREMENT:																			; jmp
 
-	add		esi, 4					; move both pointers forward
-	loop	L2						; inner loop
-	pop		ecx						; retrieve outer loop count
-	loop	L1						; else repeat outer loop
+; Increment esi and loop and outer
+	add		esi, TYPE DWORD
+	loop	INNER_LOOP																; loop
+	pop		ecx
+	loop	OUTER_LOOP																; loop
 
-L4:
-
+; Exit when array is sorted
 	pop		ebp
 	ret		2 * TYPE PARAM_1
 
@@ -329,32 +332,32 @@ sortList ENDP
 ; Description:        Swaps two values by reference
 ; Pre-conditions:	  Two array addresses pushed onto stack
 ; Post-conditions:	  Paramater 1 and 2 are swapped
-; Parameters:		  PARAM_1: esi+4, PARAM_2: esi 
+; Parameters:		  PARAM_1: index 1, PARAM_2: index 2 
 ; Registers changed:  eax, ebx
 ;------------------------------------------------------------------------------
 
 exchangeElements PROC
 
-; Set up the
-	pushad
-	;push	ebp
+; Set up the stack frame
+	push	ebp
 	mov		ebp, esp
-	
+	pushad
 
-	;mov		eax, [PARAM_1]
-	;mov		ebx, [PARAM_2]
-	;mov		[PARAM_2], eax
-	;mov		[PARAM_1], ebx
-	
-	
-	mov		eax, [esi+4]
-	mov		ebx, [esi]
+; Swap the elements passed by reference
+	mov		eax, [PARAM_1]
+	mov		ebx, [PARAM_2]
+	mov		edx, [eax]
+	mov		eax, [ebx]
+	mov		ebx, edx
+
+; Insert the swapped numbers
 	mov		[esi], eax
 	mov		[esi+4], ebx
 	
-	;pop ebp
+; Exit after swap
 	popad
-	ret		2 * TYPE PARAM_1
+	pop		ebp
+	ret		8
 
 exchangeElements ENDP
 
@@ -386,9 +389,9 @@ displayMedian PROC
 
 ; Jump to even or odd calculation
 	cmp		edx, 0
-	jne		ODD_MEDIAN		
+	jne		ODD_MEDIAN																; jmp	
 
-EVEN_MEDIAN:
+EVEN_MEDIAN:																		; jmp
 
 ; Get middle 2 elements (100 and 99)
 	mov		eax, PARAM_1
@@ -403,13 +406,13 @@ EVEN_MEDIAN:
 	div		ebx
 	add		eax, edx
 	call	WriteDec
-	jmp		FINISH_MEDIAN
+	jmp		FINISH_MEDIAN															; jmp
 
-ODD_MEDIAN:
-; The container is fixed as even, so this won't occur
+ODD_MEDIAN:																			; The container is fixed as even, so this won't be reached
 
-FINISH_MEDIAN:
+FINISH_MEDIAN:																		; jmp
 
+; Exit after median created
 	pop		ebp
 	ret		3 * TYPE PARAM_1
 
@@ -420,11 +423,12 @@ displayMedian ENDP
 ; countList
 ;
 ; Description:        Counts occurances of each number and prints them
-; Pre-conditions:	  
-; Post-conditions:	  20 number counts printed to console using displayList
+; Pre-conditions:	  OFFSET array, ARRAY_SIZE, OFFSET numCounts, RANGE_LO
+;					  pushed onto the stack
+; Post-conditions:	  The 20 current number occurances in array stored in numCounts
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
 ;					  PARAM_3: OFFSET numCounts, PARAM_4: RANGE_LO (value)
-; Registers changed:  eax, ebx, edx
+; Registers changed:  eax, ebx, ecx, edx, esi, edi, ebp, esp
 ;------------------------------------------------------------------------------
 
 countList PROC
@@ -443,19 +447,21 @@ START_LOOP:
 	mov		eax, 0
 	
 COUNT_LOOP:
+
+; Check for number and branch if found
 	cmp		ebx, [esi]
-	je		NUM_FOUND
+	je		NUM_FOUND																; jmp
 	add		esi, TYPE DWORD
-	loop	COUNT_LOOP
-	jmp		NEXT_NUMBER
+	loop	COUNT_LOOP																; loop
+	jmp		NEXT_NUMBER																; jmp
 
 NUM_FOUND:
 
 ; Loop through each value and count occurance
 	inc		eax
 	add		esi, TYPE DWORD
-	loop	COUNT_LOOP
-	jmp		NEXT_NUMBER
+	loop	COUNT_LOOP																; loop
+	jmp		NEXT_NUMBER																; jmp
 
 NEXT_NUMBER:
 
@@ -466,11 +472,12 @@ NEXT_NUMBER:
 ; Increment the number to check for
 	inc		ebx
 	cmp		ebx, 30
-	je		FINISH_COUNT
-	jmp		START_LOOP
+	je		FINISH_COUNT															; jmp
+	jmp		START_LOOP																; jmp
 
 FINISH_COUNT:
 
+; Exit after counts created
 	pop		ebp
 	ret		4 * TYPE PARAM_1
 
@@ -495,7 +502,7 @@ quit PROC
 	mov		ebp, esp
 	mov		edx, PARAM_1
 
-; Prompt the user and return in eax
+; Prompt the user and return bool in eax
 	call	WriteString
 	call	ReadInt
 	pop		ebp
