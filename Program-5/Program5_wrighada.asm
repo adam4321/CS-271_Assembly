@@ -1,7 +1,7 @@
 TITLE Program 5                 Program5_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-21-2020
+; Last Modified:				2-22-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               5  
@@ -142,7 +142,7 @@ main ENDP
 ; Post-conditions:	 none
 ; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 ;					 PARAM_3: OFFSET instruct
-; Registers changed: edx, ebp, esp
+; Registers changed: edx
 ;------------------------------------------------------------------------------
 
 introduction PROC
@@ -179,7 +179,7 @@ introduction ENDP
 ; Post-conditions:	 array filled with 200 values in range 10-29
 ; Parameters:		 PARAM_1: OFFSET array, PARAM_2: RANGE_LO (value)
 ;					 PARAM_3: RANGE_HI (value) PARAM_4: ARRAY_SIZE (value)
-; Registers changed: eax, esi, ebp, esp
+; Registers changed: eax, ecx, esi
 ;------------------------------------------------------------------------------
 
 fillArray PROC
@@ -219,7 +219,7 @@ fillArray ENDP
 ; Post-conditions:	  array printed to console
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE 
 ;					  PARAM_3: printing message (unsortMsg, sortMsg or listMsg)
-; Registers changed:  eax, edx, ecx, ebx, esi, ebp, esp
+; Registers changed:  eax, ebx, ecx, edx, esi
 ;------------------------------------------------------------------------------
 
 displayList PROC
@@ -246,15 +246,15 @@ PRINT_ARR_1:																		; After number printed JMP From: line-256
 	call	WriteChar
 	call	WriteChar
 	cmp		ebx, 20
-	je		PRINT_CRLF																; 20 in current row JMP To: line-259
+	je		PRINT_CRLF																; After 20 numbers in current row JMP To: line-259
 	inc		ebx
 
 PRINT_ARR_2:																		; After newline continue From: line-264
 
 ; Increment counters and check loop counter
 	add		esi, TYPE DWORD
-	loop	PRINT_ARR_1																; Number printed JMP To: line-240
-	jmp		FINISH_PRINT															; Printing loop finished JMP To: line-266
+	loop	PRINT_ARR_1																; After number printed LOOP To: line-240
+	jmp		FINISH_PRINT															; After entire array printed JMP To: line-266
 
 PRINT_CRLF:																			; After 20 nums JMP From line-249
  
@@ -280,7 +280,7 @@ displayList ENDP
 ; Pre-conditions:	  OFFSET array and ARRAY_SIZE on stack
 ; Post-conditions:	  array sorted from low to high
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE
-; Registers changed:  eax, ecx, ebp, esi, esp
+; Registers changed:  eax, ecx, esi
 ;------------------------------------------------------------------------------
 
 sortList PROC
@@ -334,7 +334,7 @@ sortList ENDP
 ;					  not working in return. Alternative must be used!
 ; Post-conditions:	  Paramater 1 and 2 are swapped
 ; Parameters:		  PARAM_1: index 1, PARAM_2: index 2  
-; Registers changed:  eax, ebx, edx, epb, esi, esp
+; Registers changed:  eax, ebx, edx
 ;------------------------------------------------------------------------------
 
 exchangeElements PROC
@@ -392,13 +392,13 @@ displayMedian PROC
 	cmp		edx, 0
 	jne		ODD_MEDIAN																; If edx != 0 (Not Possible!) JMP To: line-412
 
-EVEN_MEDIAN:																		; jmp
+EVEN_MEDIAN:																		; No need to jump, this will always be hit
 
 ; Get middle 2 elements (100 and 99)
 	mov		eax, PARAM_1
 	add		eax, 99 * TYPE DWORD
 	mov		ebx, [eax]
-	add		eax, 4
+	add		eax, TYPE DWORD
 	mov		eax, [eax]
 
 ; Calculate the median (.5 rounds up)
@@ -407,11 +407,11 @@ EVEN_MEDIAN:																		; jmp
 	div		ebx
 	add		eax, edx
 	call	WriteDec
-	jmp		FINISH_MEDIAN															; jmp
+	jmp		FINISH_MEDIAN															; If odd container were possible, this must be implemented
 
 ODD_MEDIAN:																			; The container is fixed as even, so this won't be reached
 
-FINISH_MEDIAN:																		; jmp
+FINISH_MEDIAN:																		; Even container size JMP From: line-410
 
 ; Exit after median created
 	pop		ebp
@@ -429,7 +429,7 @@ displayMedian ENDP
 ; Post-conditions:	  The 20 current number occurances in array stored in numCounts
 ; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
 ;					  PARAM_3: OFFSET numCounts, PARAM_4: RANGE_LO (value)
-; Registers changed:  eax, ebx, ecx, edx, esi, edi, ebp, esp
+; Registers changed:  eax, ebx, ecx, edx, esi, edi
 ;------------------------------------------------------------------------------
 
 countList PROC
@@ -440,31 +440,31 @@ countList PROC
 	mov		ebx, PARAM_4
 	mov		edi, [PARAM_3]
 
-START_LOOP:																			; jmp
+START_LOOP:																			; Iterate through array for each num 10-29 LOOP From: line-477
 
 ; Initialize the outer loop
 	mov		esi, [PARAM_1]
 	mov		ecx, PARAM_2
 	mov		eax, 0
 	
-COUNT_LOOP:																			; jmp
+COUNT_LOOP:																			; Array not iterated through yet LOOP From: line-456 or 464
 
 ; Check for number and branch if found
 	cmp		ebx, [esi]
-	je		NUM_FOUND																; jmp
+	je		NUM_FOUND																; Searched num found JMP To: line-459
 	add		esi, TYPE DWORD
-	loop	COUNT_LOOP																; loop
-	jmp		NEXT_NUMBER																; jmp
+	loop	COUNT_LOOP																; Iterate through entire array LOOP To: line-450
+	jmp		NEXT_NUMBER																; Array iterated through JMP To: line-467
 
-NUM_FOUND:																			; jmp
+NUM_FOUND:																			; Searched num found JMP From: line-454
 
 ; Loop through each value and count occurance
 	inc		eax
 	add		esi, TYPE DWORD
-	loop	COUNT_LOOP																; loop
-	jmp		NEXT_NUMBER																; jmp
+	loop	COUNT_LOOP																; Iterate through whole array LOOP To: line-450
+	jmp		NEXT_NUMBER																; Full interation of array JMP To: line-467
 
-NEXT_NUMBER:																		; jmp
+NEXT_NUMBER:																		; Increment num to check JMP From: line-457 or 465
 
 ; Enter the count into occurance list
 	mov		[edi], eax
@@ -473,10 +473,10 @@ NEXT_NUMBER:																		; jmp
 ; Increment the number to check for
 	inc		ebx
 	cmp		ebx, 30
-	je		FINISH_COUNT															; jmp
-	jmp		START_LOOP																; jmp
+	je		FINISH_COUNT															; After counting 29 JMP To: line-479
+	jmp		START_LOOP																; 29 not yet counted JMP To: line-443
 
-FINISH_COUNT:																		; jmp
+FINISH_COUNT:																		; Count array filled JMP From: line-476
 
 ; Exit after counts created
 	pop		ebp
@@ -493,7 +493,7 @@ countList ENDP
 ; Pre-conditions:	  quitPrompt pushed onto stack
 ; Post-conditions:	  quitVal stored in eax upon return
 ; Parameters:		  PARAM_1: OFFSET quitPrompt
-; Registers changed:  edx, eax, epb, esp
+; Registers changed:  edx, eax
 ;------------------------------------------------------------------------------
 
 quit PROC
@@ -519,7 +519,7 @@ quit ENDP
 ; Pre-conditions:	  byePrompt pushed onto stack
 ; Post-conditions:	  none
 ; Parameters:		  PARAM_1: OFFSET byePrompt
-; Registers changed:  edx, ebp, esp
+; Registers changed:  edx
 ;------------------------------------------------------------------------------
 
 farewell PROC															
