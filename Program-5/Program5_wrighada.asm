@@ -1,7 +1,7 @@
 TITLE Program 5                 Program5_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-22-2020
+; Last Modified:				2-23-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               5  
@@ -239,7 +239,7 @@ displayList PROC
 
 PRINT_ARR_1:																		; After number printed JMP From: line-256
 
-; Print a row of 20 numbers
+; Print a row of 20 numbers with two white spaces between
 	mov		eax, [esi]
 	call	WriteDec
 	mov		al, ' '
@@ -301,13 +301,13 @@ INNER_LOOP:																			; Continue iteration Loop From: line-318
 
 ; Compare and swap or branch
 	mov		eax, [esi]
-	cmp		[esi+4], eax
+	cmp		[esi + TYPE DWORD], eax
 	jg		INCREMENT																; No swap JMP To: line-314
 
 ; Call swap function
-	add		esi, 4
+	add		esi, TYPE DWORD
 	push	esi
-	sub		esi, 4
+	sub		esi, TYPE DWORD
 	push	esi
 	call	exchangeElements
 
@@ -353,7 +353,7 @@ exchangeElements PROC
 
 ; Insert the swapped numbers
 	mov		[esi], eax
-	mov		[esi+4], ebx
+	mov		[esi + TYPE DWORD], ebx
 	
 ; Exit after swap
 	popad
