@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-24-2020
+; Last Modified:				2-28-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -64,48 +64,7 @@ main PROC
 
 MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 
-; Fill the array with random numbers between 10-29
-	push	ARRAY_SIZE
-	push	RANGE_HI
-	push	RANGE_LO
-	push	OFFSET array
-	call	fillArray
 
-; Print the unsorted array
-	push	OFFSET unsortMsg
-	push	ARRAY_SIZE
-	push	OFFSET array
-	call	displayList
-
-; Sort the array from low to high
-	push	ARRAY_SIZE
-	push	OFFSET array
-	call	sortList
-
-; Calculate and print the median value
-	push	OFFSET medianMsg
-	push	ARRAY_SIZE
-	push	OFFSET array
-	call	displayMedian
-
-; Print the sorted array
-	push	OFFSET sortMsg
-	push	ARRAY_SIZE
-	push	OFFSET array
-	call	displayList
-
-; Calculate number occurances 10-19
-	push	RANGE_LO
-	push	OFFSET numCounts
-	push	ARRAY_SIZE
-	push	OFFSET array
-	call	countList
-
-; Print the number counts 10-29
-	push	OFFSET listMsg
-	push	COUNT_LIST_SIZE
-	push	OFFSET numCounts
-	call	displayList
 
 ; Ask if the user wants to quit
 	push	OFFSET quitPrompt
