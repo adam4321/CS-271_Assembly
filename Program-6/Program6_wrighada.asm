@@ -28,19 +28,23 @@ PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 ;  -------------------------------------------------------------------------------  ; VARIABLE DEFINITIONS
 
 .data																				
-intro		BYTE	"** Program-6 -- Array Sorting **", 0
-programmer	BYTE	"** Programmed by Adam Wright  **", 0
-instruct	BYTE	"This program generates 200 random numbers in the range "
-			BYTE	"[10 ... 29], displays the original list, ", 0dh, 0ah
-			BYTE	"sorts the list, displays the median value, displays "
-			BYTE	"the list sorted in ascending order, then ", 0dh, 0ah
-			BYTE	"displays the number of instances of each generated "
-			BYTE	"value.", 0
+intro		BYTE	"** Program-6 -- Designing low-level I/O procedures **", 0
+programmer	BYTE	"** Programmed by Adam Wright **", 0
+instruct	BYTE	"Please provide 10 signed decimal integers.", 0dh, 0ah
+			BYTE	"Each number needs to be small enough "
+			BYTE	"to fit inside a 32 bit register.", 0dh, 0ah
+			BYTE	"After you have finished inputting the raw numbers "
+			BYTE	"I will display a list", 0dh, 0ah
+			BYTE	"of the integers, their sum, and their average value.", 0dh, 0ah, 0
 unsortMsg	BYTE	"Your unsorted random numbers:", 0
 medianMsg	BYTE	"List Median: ", 0
 sortMsg		BYTE	"Your sorted random numbers:", 0
 listMsg		BYTE	"Your list of instances of each generated number, "
 			BYTE	"starting with the number of 10s:", 0
+userPrompt	BYTE	"Please enter a signed number: ", 0
+errPrompt	BYTE	"ERROR: You did not enter a signed number or "
+			BYTE	"your number was too big.", 0dh, 0ah
+			BYTE	"Please try again: ", 0dh, 0ah, 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 array		DWORD	ARRAY_SIZE DUP(?)												; Empty array of DWORDS to hold the number array
