@@ -14,10 +14,7 @@ INCLUDE Irvine32.inc
 
 ;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
-ARRAY_SIZE = 200																	; Constant holding the highest possible value for input
-RANGE_LO = 10																		; Constant holding the lowest possible random num in array
-RANGE_HI = 29																		; Constant holding the highest possible random num in array
-COUNT_LIST_SIZE = 20																; Constant holding the size of the occurance list
+ARRAY_SIZE = 10 																	; Constant holding the highest possible value for input
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
