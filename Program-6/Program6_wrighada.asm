@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				2-28-2020
+; Last Modified:				3-2-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -35,21 +35,21 @@ instruct	BYTE	"Please provide 10 signed decimal integers.", 0dh, 0ah
 			BYTE	"to fit inside a 32 bit register.", 0dh, 0ah
 			BYTE	"After you have finished inputting the raw numbers "
 			BYTE	"I will display a list", 0dh, 0ah
-			BYTE	"of the integers, their sum, and their average value.", 0dh, 0ah, 0
-unsortMsg	BYTE	"Your unsorted random numbers:", 0
-medianMsg	BYTE	"List Median: ", 0
-sortMsg		BYTE	"Your sorted random numbers:", 0
-listMsg		BYTE	"Your list of instances of each generated number, "
-			BYTE	"starting with the number of 10s:", 0
+			BYTE	"of the integers, their sum, "
+			BYTE	"and their average value.", 0dh, 0ah, 0
 userPrompt	BYTE	"Please enter a signed number: ", 0
 errPrompt	BYTE	"ERROR: You did not enter a signed number or "
 			BYTE	"your number was too big.", 0dh, 0ah
 			BYTE	"Please try again: ", 0dh, 0ah, 0
+listMsg		BYTE	"You entered the following numbers: ", 0
+sumMsg		BYTE	"The sum of these numbers is: ", 0
+avgMsg		BYTE	"The rounded average is: "
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
-array		DWORD	ARRAY_SIZE DUP(?)												; Empty array of DWORDS to hold the number array
-numCounts	DWORD	20 DUP(?)														; Empty array
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
+numArray	DWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
+numSum		DWORD	0																; Variable for receiving the sum of the entered numbers
+numAvg		DWORD	0																; Varialbe for receiving the average of the entered numbers
 
 
 ;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
