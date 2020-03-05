@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-4-2020
+; Last Modified:				3-5-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -29,7 +29,8 @@ PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 ;------------------------------------------------------------------------------
 ; getString
 ;
-; Description:        MACRO that prompts the user for a string
+; Description:        MACRO that prompts the user for a string while storing 
+;					  and restoring edx
 ; Pre-conditions:	  Parameter passed is a variable to hold the address of a 
 ;					  string
 ; Post-conditions:	  String stored in the chosen variable 
@@ -45,7 +46,7 @@ ENDM
 ;------------------------------------------------------------------------------
 ; displayString
 ;
-; Description:        MACRO that prints a string 
+; Description:        MACRO that prints a string while storing and restoring edx
 ; Pre-conditions:	  Parameter passed is the address of an array
 ; Post-conditions:	  String printed to the console
 ; Parameters:		  ptr_buffer
@@ -143,19 +144,16 @@ introduction PROC
 	push	ebp
 	mov		ebp, esp
 	call	CrLf
-	mov		edx, PARAM_1
-	call	WriteString
+	displayString PARAM_1
 
 ; Print the programmer message
 	call	CrLf
-	mov		edx, PARAM_2
-	call	WriteString
+	displayString PARAM_2
 
 ; Print the instructions and finish
 	call	CrLf
 	call	CrLf
-	mov		edx, PARAM_3
-	call	WriteString
+	displayString PARAM_3
 	call	CrLf
 	pop		ebp
 	ret		3 * TYPE PARAM_1
@@ -247,10 +245,9 @@ quit PROC
 ; Set up message in edx
 	push	ebp
 	mov		ebp, esp
-	mov		edx, PARAM_1
+	displayString PARAM_1
 
 ; Prompt the user and return bool in eax
-	call	WriteString
 	call	ReadInt
 	pop		ebp
 	ret		1 * TYPE PARAM_1
@@ -274,10 +271,9 @@ farewell PROC
 	call	CrLf
 	push	ebp
 	mov		ebp, esp
-	mov		edx, PARAM_1
+	displayString PARAM_1
 
 ; Print the Goodbye message
-	call	WriteString
 	call	CrLf
 	pop		ebp
 	ret		1 * TYPE PARAM_1
