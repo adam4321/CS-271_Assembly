@@ -38,8 +38,16 @@ PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 ; Registers changed:  None
 ;------------------------------------------------------------------------------
 
-getString MACRO
-	ReadString
+getString MACRO ptr_varName, ptr_prompt
+    push    ecx
+    push    edx
+	mov		edx, ptr_prompt
+	call	WriteString
+    mov     edx, ptr_varName
+	mov		ecx, (SIZEOF ptr_varName) - 1
+	call	ReadString
+	pop		edx
+	pop		ecx
 ENDM
 
 
@@ -85,7 +93,8 @@ byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 numArray	DWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
 numSum		DWORD	0																; Variable for receiving the sum of the entered numbers
-numAvg		DWORD	0																; Varialbe for receiving the average of the entered numbers
+numAvg		DWORD	0																; Variable for receiving the average of the entered numbers
+numCount	DWORD	0																; Variable holding the current number of valid entries
 
 
 ;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
@@ -104,7 +113,10 @@ main PROC
 
 MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 
-
+; Request 10 numbers from the user
+	push	ARRAY_SIZE
+	push	OFFSET numArray
+	call	readVal
 
 ; Ask if the user wants to quit
 	push	OFFSET quitPrompt
@@ -246,6 +258,11 @@ quit PROC
 	push	ebp
 	mov		ebp, esp
 	displayString PARAM_1
+
+; Reset variables for potential next running
+	mov		numSum, 0
+	mov		numAvg, 0
+	mov		numCount, 0
 
 ; Prompt the user and return bool in eax
 	call	ReadInt
