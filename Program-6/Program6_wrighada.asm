@@ -92,6 +92,7 @@ quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 numArray	DWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
+strTest		BYTE	30 DUP(?), 0													; Empty string for receiving user input
 numSum		DWORD	0																; Variable for receiving the sum of the entered numbers
 numAvg		DWORD	0																; Variable for receiving the average of the entered numbers
 numCount	DWORD	0																; Variable holding the current number of valid entries
@@ -114,8 +115,10 @@ main PROC
 MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 
 ; Request 10 numbers from the user
+	push	OFFSET errPrompt
+	push	OFFSET userPrompt
 	push	ARRAY_SIZE
-	push	OFFSET numArray
+	push	OFFSET strTest
 	call	readVal
 
 ; Ask if the user wants to quit
@@ -186,12 +189,16 @@ introduction ENDP
 
 readVal PROC
 
-;
+; Set up registers
 	push	ebp
 	mov		ebp, esp
 
+; Call macro to get user value
+	;getString PARAM_1, PARAM_3
+
+
 	pop		ebp
-	ret
+	ret		4 * TYPE PARAM_1
 
 readVal ENDP
 
@@ -214,7 +221,7 @@ writeVal PROC
 	mov		ebp, esp
 
 	pop		ebp
-	ret
+	ret		
 
 writeVal ENDP
 
