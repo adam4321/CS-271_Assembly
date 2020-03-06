@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-5-2020
+; Last Modified:				3-6-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -16,12 +16,15 @@ INCLUDE Irvine32.inc
 
 ;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
-ARRAY_SIZE = 10 																	; Constant holding the highest possible value for input
+ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
+STR_SIZE = 30																		; Constant holding the input size
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
 PARAM_3 EQU [ebp + 16]																; Explicit stack offset for parameter 3
 PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
+PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
+PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
 
 
 ;  -------------------------------------------------------------------------------	; MACRO DEFINITIONS
@@ -38,13 +41,13 @@ PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 ; Registers changed:  None
 ;------------------------------------------------------------------------------
 
-getString MACRO ptr_varName, ptr_prompt
+getString MACRO ptr_prompt, ptr_varName, VAR_SIZE
     push    ecx
     push    edx
 	mov		edx, ptr_prompt
 	call	WriteString
     mov     edx, ptr_varName
-	mov		ecx, (SIZEOF ptr_varName) - 1
+	mov		ecx, VAR_SIZE
 	call	ReadString
 	pop		edx
 	pop		ecx
@@ -118,6 +121,8 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 	push	OFFSET errPrompt
 	push	OFFSET userPrompt
 	push	ARRAY_SIZE
+	push	OFFSET numArray
+	push	STR_SIZE
 	push	OFFSET strTest
 	call	readVal
 
@@ -182,8 +187,9 @@ introduction ENDP
 ; Description:       
 ; Pre-conditions:	 
 ; Post-conditions:	 
-; Parameters:		 PARAM_1: , PARAM_2: 
-;					 PARAM_3: , PARAM_4: 
+; Parameters:		 PARAM_1: OFFSET strTest, PARAM_2: STR_SIZE (value)
+;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
+;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errPrompt
 ; Registers changed: 
 ;------------------------------------------------------------------------------
 
@@ -192,11 +198,14 @@ readVal PROC
 ; Set up registers
 	push	ebp
 	mov		ebp, esp
+	mov		ecx, PARAM_4
 
 ; Call macro to get user value
-	;getString PARAM_1, PARAM_3
+	getString PARAM_5, PARAM_1, PARAM_2
 
 
+; Clean up and return
+	call	CrLf
 	pop		ebp
 	ret		4 * TYPE PARAM_1
 
