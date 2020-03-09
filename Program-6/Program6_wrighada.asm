@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-6-2020
+; Last Modified:				3-8-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -199,10 +199,20 @@ readVal PROC
 	push	ebp
 	mov		ebp, esp
 	mov		ecx, PARAM_4
+	mov		edi, PARAM_3
+	mov		esi, PARAM_1
+
+FILL_LOOP:
 
 ; Call macro to get user value
 	getString PARAM_5, PARAM_1, PARAM_2
 
+
+
+; Number passes validation
+	mov		[edi], eax
+	add		esi, 4
+	loop	FILL_LOOP
 
 ; Clean up and return
 	call	CrLf
@@ -225,10 +235,13 @@ readVal ENDP
 
 writeVal PROC
 
-; 
+; Set up registers
 	push	ebp
 	mov		ebp, esp
 
+	
+
+; Clean up and return
 	pop		ebp
 	ret		
 
