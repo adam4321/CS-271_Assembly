@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-8-2020
+; Last Modified:				3-9-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -246,28 +246,6 @@ writeVal PROC
 	ret		
 
 writeVal ENDP
-
-
-;------------------------------------------------------------------------------
-; displayResults
-;
-; Description:        
-; Pre-conditions:	  
-; Post-conditions:	  
-; Parameters:		  PARAM_1: , PARAM_2: 
-; Registers changed:  
-;------------------------------------------------------------------------------
-
-displayResults PROC
-
-; 
-	push	ebp
-	mov		ebp, esp
-
-	pop		ebp
-	ret		
-
-displayResults ENDP
 
 
 ;------------------------------------------------------------------------------
