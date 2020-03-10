@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-9-2020
+; Last Modified:				3-10-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -228,14 +228,59 @@ ERROR_PROMPT:																		; jmp
 	mov		esi, [PARAM_1]
 	cld
 
-VALIDATE:
+VALIDATE:																			; jmp
 
-; Pull out the bytes from the string
+; Pull the first byte and check for negative
 	lodsb
 	cmp		al, 45
+	je		REMOVE_MINUS																; jmp
+	cmp		al, 43
+	je		REMOVE_PLUS
+	jmp		POSITIVE																; jmp
+	
+REMOVE_MINUS:
+
+; Pull off the minus sign
+	lodsb
+	dec		ecx
+	jmp		NEGATIVE
+
+REMOVE_PLUS:
+
+; Pull off the plus sign
+	lodsb
+	dec		ecx
+	jmp		POSITIVE
+
+NEGATIVE:																			; jmp
+
+; Validate possible negative value
+	cmp		al, 48
+	jl		ERROR_PROMPT
+	cmp		al, 57
+	jg		ERROR_PROMPT
+	
+; Process valid negative digit
+
+	jmp		VALID_NUMBER
 
 
 
+POSITIVE:
+
+; Validate possible positive value
+	cmp		al, 48
+	jl		ERROR_PROMPT
+	cmp		al, 57
+	jg		ERROR_PROMPT
+
+; Process valid positive digit
+	
+
+
+
+
+VALID_NUMBER:
 
 ; Clean up and return
 	call	CrLf
