@@ -17,7 +17,8 @@ INCLUDE Irvine32.inc
 ;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
 ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
-STR_SIZE = 30																		; Constant holding the input size
+STR_SIZE = 31																		; Constant holding the input size
+NEG_CONVERT = -1																	; Constant holding the negative conversion coefficient
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
@@ -25,34 +26,11 @@ PARAM_3 EQU [ebp + 16]																; Explicit stack offset for parameter 3
 PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
 PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
 PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
+PARAM_7 EQU [ebp + 32]																; Explicit stack offset for parameter 7
+PARAM_8 EQU [ebp + 36]																; Explicit stack offset for parameter 8
 
 
 ;  -------------------------------------------------------------------------------	; MACRO DEFINITIONS
-
-;------------------------------------------------------------------------------
-; getString
-;
-; Description:        MACRO that prompts the user for a string while storing 
-;					  and restoring edx
-; Pre-conditions:	  Parameter passed is a variable to hold the address of a 
-;					  string
-; Post-conditions:	  String stored in the chosen variable 
-; Parameters:		  varName
-; Registers changed:  None
-;------------------------------------------------------------------------------
-
-getString MACRO ptr_prompt, ptr_varName, VAR_SIZE
-    push    ecx
-    push    edx
-	mov		edx, ptr_prompt
-	call	WriteString
-    mov     edx, ptr_varName
-	mov		ecx, VAR_SIZE
-	call	ReadString
-	pop		edx
-	pop		ecx
-ENDM
-
 
 ;------------------------------------------------------------------------------
 ; displayString
@@ -72,6 +50,30 @@ displayString MACRO ptr_buffer
 ENDM
 
 
+;------------------------------------------------------------------------------
+; getString
+;
+; Description:        MACRO that prompts the user for a string while storing 
+;					  and restoring edx
+; Pre-conditions:	  Parameter passed is a variable to hold the address of a 
+;					  string
+; Post-conditions:	  String stored in the chosen variable 
+; Parameters:		  varName
+; Registers changed:  None
+;------------------------------------------------------------------------------
+
+getString MACRO ptr_prompt, ptr_varName, VAR_SIZE
+    push    ecx
+    push    edx
+	displayString ptr_prompt
+    mov     edx, ptr_varName
+	mov		ecx, VAR_SIZE
+	call	ReadString
+	pop		edx
+	pop		ecx
+ENDM
+
+
 ;  -------------------------------------------------------------------------------  ; VARIABLE DEFINITIONS
 
 .data																				
@@ -85,9 +87,9 @@ instruct	BYTE	"Please provide 10 signed decimal integers.", 0dh, 0ah
 			BYTE	"of the integers, their sum, "
 			BYTE	"and their average value.", 0dh, 0ah, 0
 userPrompt	BYTE	"Please enter a signed number: ", 0
-errPrompt	BYTE	"ERROR: You did not enter a signed number or "
-			BYTE	"your number was too big.", 0dh, 0ah
-			BYTE	"Please try again: ", 0dh, 0ah, 0
+errMsg		BYTE	"ERROR: You did not enter a signed number or "
+			BYTE	"your number was too big.", 0dh, 0ah, 0
+errPrompt	BYTE	"Please try again: ", 0
 listMsg		BYTE	"You entered the following numbers: ", 0
 sumMsg		BYTE	"The sum of these numbers is: ", 0
 avgMsg		BYTE	"The rounded average is: "
@@ -95,10 +97,11 @@ quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 numArray	DWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
-strTest		BYTE	30 DUP(?), 0													; Empty string for receiving user input
+strTest		BYTE	31 DUP(?), 0													; Empty string for receiving user input
+testedNum	DWORD	0																; Variable for receiving a validated number
 numSum		DWORD	0																; Variable for receiving the sum of the entered numbers
 numAvg		DWORD	0																; Variable for receiving the average of the entered numbers
-numCount	DWORD	0																; Variable holding the current number of valid entries
+isNeg		DWORD	0																; Variable 
 
 
 ;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
@@ -118,13 +121,15 @@ main PROC
 MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 
 ; Request 10 numbers from the user
+	push	OFFSET testedNum
 	push	OFFSET errPrompt
+	push	OFFSET errMsg
 	push	OFFSET userPrompt
 	push	ARRAY_SIZE
 	push	OFFSET numArray
 	push	STR_SIZE
 	push	OFFSET strTest
-	call	readVal
+	call	getValues
 
 ; Ask if the user wants to quit
 	push	OFFSET quitPrompt
@@ -188,8 +193,8 @@ introduction ENDP
 ; Pre-conditions:	 
 ; Post-conditions:	 
 ; Parameters:		 PARAM_1: OFFSET strTest, PARAM_2: STR_SIZE (value)
-;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
-;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errPrompt
+;					 PARAM_3: OFFSET userPrompt, PARAM_4: OFFSET errMsg
+;					 PARAM_5: OFFSET errPrompt, PARAM_6: OFFSET testedNum
 ; Registers changed: 
 ;------------------------------------------------------------------------------
 
@@ -198,28 +203,80 @@ readVal PROC
 ; Set up registers
 	push	ebp
 	mov		ebp, esp
+	pushad
 	mov		ecx, PARAM_4
 	mov		edi, PARAM_3
 	mov		esi, PARAM_1
 
-FILL_LOOP:
+; Call macro to get user number
+	getString PARAM_3, PARAM_1, PARAM_2
+	jmp		VALIDATE
 
-; Call macro to get user value
+ERROR_PROMPT:																		; jmp
+
+; Print error and request a valid number
+	displayString PARAM_4
 	getString PARAM_5, PARAM_1, PARAM_2
 
+VALIDATE:
 
 
-; Number passes validation
-	mov		[edi], eax
-	add		esi, 4
-	loop	FILL_LOOP
+
 
 ; Clean up and return
 	call	CrLf
+	popad
 	pop		ebp
-	ret		4 * TYPE PARAM_1
+	ret		5 * TYPE PARAM_1
 
 readVal ENDP
+
+
+;------------------------------------------------------------------------------
+; getValues
+;
+; Description:       Gets 10 valid numbers and stores them in an array
+; Pre-conditions:	 
+; Post-conditions:	 
+; Parameters:		 PARAM_1: OFFSET strTest, PARAM_2: STR_SIZE (value)
+;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
+;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errMsg
+;					 PARAM_7: OFFSET errPrompt, PARAM_8: OFFSET testedNum
+; Registers changed: 
+;------------------------------------------------------------------------------
+
+getValues PROC
+
+; Set up registers
+	push	ebp
+	mov		ebp, esp
+	mov		ecx, PARAM_4
+	mov		edi, PARAM_3
+	mov		esi, PARAM_1
+
+FILL_LOOP:																			; jmp
+
+; Call proc to get string and return value in eax
+	push	PARAM_8
+	push	PARAM_7
+	push	PARAM_6
+	push	PARAM_5
+	push	PARAM_2
+	push	PARAM_1
+	call	readVal
+
+; Number passed validation so add it to the array
+	mov		eax, [PARAM_8]
+	mov		ebx, [eax]
+	mov		[edi], ebx
+	add		edi, 4
+	loop	FILL_LOOP
+
+; Clean up and return
+	pop		ebp
+	ret		7 * TYPE PARAM_1
+
+getValues ENDP
 
 
 ;------------------------------------------------------------------------------
@@ -269,7 +326,6 @@ quit PROC
 ; Reset variables for potential next running
 	mov		numSum, 0
 	mov		numAvg, 0
-	mov		numCount, 0
 
 ; Prompt the user and return bool in eax
 	call	ReadInt
