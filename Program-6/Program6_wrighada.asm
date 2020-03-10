@@ -210,6 +210,11 @@ readVal PROC
 
 ; Call macro to get user number
 	getString PARAM_3, PARAM_1, PARAM_2
+	mov		edx, 0
+	mov		ebx, 10
+	mov		ecx, eax
+	mov		esi, [PARAM_1]
+	cld
 	jmp		VALIDATE
 
 ERROR_PROMPT:																		; jmp
@@ -217,8 +222,17 @@ ERROR_PROMPT:																		; jmp
 ; Print error and request a valid number
 	displayString PARAM_4
 	getString PARAM_5, PARAM_1, PARAM_2
+	mov		edx, 0
+	mov		ebx, 10
+	mov		ecx, eax
+	mov		esi, [PARAM_1]
+	cld
 
 VALIDATE:
+
+; Pull out the bytes from the string
+	lodsb
+	cmp		al, 45
 
 
 
@@ -227,7 +241,7 @@ VALIDATE:
 	call	CrLf
 	popad
 	pop		ebp
-	ret		5 * TYPE PARAM_1
+	ret		6 * TYPE PARAM_1
 
 readVal ENDP
 
@@ -254,7 +268,7 @@ getValues PROC
 	mov		edi, PARAM_3
 	mov		esi, PARAM_1
 
-FILL_LOOP:																			; jmp
+FILL_LOOP:																			; Loop From: line-
 
 ; Call proc to get string and return value in eax
 	push	PARAM_8
@@ -274,7 +288,7 @@ FILL_LOOP:																			; jmp
 
 ; Clean up and return
 	pop		ebp
-	ret		7 * TYPE PARAM_1
+	ret		8 * TYPE PARAM_1
 
 getValues ENDP
 
