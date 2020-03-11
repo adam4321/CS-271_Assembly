@@ -413,8 +413,25 @@ SUM_lOOP:																			; Loop
 ; Calculate the average
 	mov		ebx, PARAM_2
 	cdq
-	mov		edx, 0
-	div		ebx
+	idiv	ebx
+	cmp		eax, 0
+	jl		ROUND_NEGATIVE
+
+; Round >=  0.5 up to next integer
+	cmp		edx, 5
+	jl		AVERAGE_FINISHED														; jmp
+	inc		eax
+	jmp		AVERAGE_FINISHED
+
+ROUND_NEGATIVE:
+
+; Round <= 0.5 down to next lower integer
+	neg		edx
+	cmp		edx, 5
+	jl		AVERAGE_FINISHED
+	dec		eax
+
+AVERAGE_FINISHED:																	; jmp
 
 ; Store the average in numAvg
 	mov		ebx, [PARAM_4]
@@ -422,7 +439,7 @@ SUM_lOOP:																			; Loop
 
 ; Clean up and return
 	pop		ebp
-	ret		
+	ret		4 * TYPE DWORD
 
 calculations ENDP
 
@@ -516,7 +533,7 @@ ARRAY_FINISHED:																		; jmp
 	call	CrLf
 	call	CrLf
 	pop		ebp
-	ret		7 * TYPE DWORD
+	ret		8 * TYPE DWORD
 
 printRslt ENDP
 
