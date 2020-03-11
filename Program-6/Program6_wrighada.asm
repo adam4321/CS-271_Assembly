@@ -226,7 +226,7 @@ readVal PROC
 	mov		ecx, eax
 	mov		esi, [PARAM_1]
 	cld
-	jmp		VALIDATE
+	jmp		VALIDATE																; jmp
 
 ERROR_PROMPT:																		; jmp
 
@@ -266,16 +266,16 @@ NO_SIGN:																			; jmp
 
 ; Pull off nothing and reload first byte
 	dec		esi
-	jmp		POSITIVE
+	jmp		POSITIVE																; jmp
 
-NEGATIVE:																			; jmp
+NEGATIVE:																			; Loop
 
 ; Validate possible negative value
 	lodsb
 	cmp		al, 48
-	jl		ERROR_PROMPT
+	jl		ERROR_PROMPT															; jmp
 	cmp		al, 57
-	jg		ERROR_PROMPT
+	jg		ERROR_PROMPT															; jmp
 	
 ; Process valid negative digit
 	sub		al, 48
@@ -284,22 +284,22 @@ NEGATIVE:																			; jmp
 	mul		ebx
 	add		eax, edi
 	mov		edx, eax
-	loop	NEGATIVE
+	loop	NEGATIVE																; Loop
 
 ; Mul by -1 to turn number negative
 	mov		ebx, -1
 	mul		ebx
 	mov		edx, eax
-	jmp		NUMBER_RANGE
+	jmp		NUMBER_RANGE															; jmp
 
-POSITIVE:																			; jmp
+POSITIVE:																			; Loop
 
 ; Validate possible positive value
 	lodsb
 	cmp		al, 48
-	jl		ERROR_PROMPT
+	jl		ERROR_PROMPT															; jmp
 	cmp		al, 57
-	jg		ERROR_PROMPT
+	jg		ERROR_PROMPT															; jmp
 
 ; Process valid positive digit
 	sub		al, 48
@@ -308,15 +308,15 @@ POSITIVE:																			; jmp
 	mul		ebx
 	add		eax, edi
 	mov		edx, eax
-	loop	POSITIVE
+	loop	POSITIVE																; Loop
 
 NUMBER_RANGE:																		; jmp
 
 ; Check that the number is between min and max int size
 	cmp		edx, 2147483647
-	jg		ERROR_PROMPT
+	jg		ERROR_PROMPT															; jmp
 	cmp		edx, -2147483648
-	jl		ERROR_PROMPT
+	jl		ERROR_PROMPT															; jmp
 	
 ; Store validated number in testedNum
 	mov		eax, [PARAM_6]
@@ -369,7 +369,7 @@ FILL_LOOP:																			; Loop From: line-
 	mov		ebx, [eax]
 	mov		[edi], ebx
 	add		edi, 4
-	loop	FILL_LOOP
+	loop	FILL_LOOP																; Loop
 
 ; Clean up and return
 	pop		ebp
@@ -454,14 +454,16 @@ printRslt PROC
 	call	CrLf
 
 ; Set up array printing
-    mov    ecx, PARAM_8
+    mov		ecx, PARAM_8
     mov     edi, [PARAM_2]     
 
-PRINT_LOOP:
+PRINT_LOOP:																			; Loop
 
 ; Convert and print each array value
-	
-	loop	PRINT_LOOP
+	push	PARAM_7
+	push	PARAM_2
+	call	writeVal
+	loop	PRINT_LOOP																; Loop
 
 ; Display the sum
 	call	CrLf
