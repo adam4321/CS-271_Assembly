@@ -8,7 +8,7 @@ TITLE Program 6                 Program6_wrighada.asm
 ; Due Date:						3-15-2020
 ; Description:					Assembly program which requests 10 32 bit signed 
 ;								integers from the user and then prints the list,
-;								the sum, and then the average of the numbers
+;								the sum, and then the average of those numbers
 
 
 INCLUDE Irvine32.inc
@@ -18,8 +18,6 @@ INCLUDE Irvine32.inc
 
 ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
 STR_SIZE = 31																		; Constant holding the input size
-MAX_INT = 2147483647																; Constant holding the max size of SDWORD
-MIN_INT = -2147483648																; Constant holding the min size of SDWORD
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
@@ -109,9 +107,6 @@ numAvg		SDWORD	0																; Variable for receiving the average of the ente
 .code
 main PROC
 
-; Seed the Irvine library random function
-	call	Randomize
-
 ; Introduce title, programmer, and instructions
 	push	OFFSET instruct
 	push	OFFSET programmer
@@ -130,6 +125,15 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 	push	STR_SIZE
 	push	OFFSET strTest
 	call	getValues
+
+; Calculate sum and average
+	call	calculations
+
+; Display the results
+	push	OFFSET avgMsg
+	push	
+	push	OFFSET listMsg
+	call	printRslt
 
 ; Ask if the user wants to quit
 	push	OFFSET quitPrompt
@@ -218,6 +222,7 @@ readVal PROC
 ERROR_PROMPT:																		; jmp
 
 ; Print error and request a valid number
+	call	CrLf
 	displayString PARAM_4
 	getString PARAM_5, PARAM_1, PARAM_2
 	mov		edx, 0
@@ -236,19 +241,19 @@ VALIDATE:																			; jmp
 	je		REMOVE_PLUS
 	jmp		NO_SIGN																	; jmp
 	
-REMOVE_MINUS:
+REMOVE_MINUS:																		; jmp
 
 ; Pull off the minus sign
 	dec		ecx
 	jmp		NEGATIVE
 
-REMOVE_PLUS:
+REMOVE_PLUS:																		; jmp
 
 ; Pull off the plus sign
 	dec		ecx
 	jmp		POSITIVE
 
-NO_SIGN:
+NO_SIGN:																			; jmp
 
 ; Pull off nothing and reload first byte
 	dec		esi
@@ -278,7 +283,7 @@ NEGATIVE:																			; jmp
 	mov		edx, eax
 	jmp		NUMBER_RANGE
 
-POSITIVE:
+POSITIVE:																			; jmp
 
 ; Validate possible positive value
 	lodsb
@@ -289,14 +294,14 @@ POSITIVE:
 
 ; Process valid positive digit
 	sub		al, 48
-	movzx	edi, al
+	movsx	edi, al
 	mov		eax, edx
 	mul		ebx
 	add		eax, edi
 	mov		edx, eax
 	loop	POSITIVE
 
-NUMBER_RANGE:
+NUMBER_RANGE:																		; jmp
 
 ; Check that the number is between min and max int size
 	cmp		edx, 2147483647
@@ -365,6 +370,32 @@ getValues ENDP
 
 
 ;------------------------------------------------------------------------------
+; calculations
+;
+; Description:        
+; Pre-conditions:	  
+; Post-conditions:	  
+; Parameters:		  PARAM_1: , PARAM_2: 
+;					  PARAM_3: 
+; Registers changed:  
+;------------------------------------------------------------------------------
+
+calculations PROC
+
+; Set up registers
+	push	ebp
+	mov		ebp, esp
+
+	
+
+; Clean up and return
+	pop		ebp
+	ret		
+
+calculations ENDP
+
+
+;------------------------------------------------------------------------------
 ; writeVal
 ;
 ; Description:        
@@ -388,6 +419,39 @@ writeVal PROC
 	ret		
 
 writeVal ENDP
+
+
+;------------------------------------------------------------------------------
+; printRslt
+;
+; Description:        
+; Pre-conditions:	  
+; Post-conditions:	  
+; Parameters:		  PARAM_1: , PARAM_2: 
+;					  PARAM_3: 
+; Registers changed:  
+;------------------------------------------------------------------------------
+
+printRslt PROC
+
+; Set up registers
+	push	ebp
+	mov		ebp, esp
+
+; Display entered numbers
+		
+
+; Display the sum
+
+
+; Display the average
+
+
+; Clean up and return
+	pop		ebp
+	ret		
+
+printRslt ENDP
 
 
 ;------------------------------------------------------------------------------
