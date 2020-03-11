@@ -13,7 +13,6 @@ TITLE Program 6                 Program6_wrighada.asm
 
 INCLUDE Irvine32.inc
 
-
 ;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
 ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
@@ -52,12 +51,12 @@ ENDM
 ;------------------------------------------------------------------------------
 ; getString
 ;
-; Description:        MACRO that prompts the user for a string while storing 
-;					  and restoring ecx and edx
-; Pre-conditions:	  Parameter passed is a variable to hold the address of a 
-;					  string
+; Description:        MACRO that prompts the user for a string while 
+;					  storing and restoring ecx and edx
+; Pre-conditions:	  Parameter passed is a variable to hold the  
+;					  address of a string
 ; Post-conditions:	  String stored in the chosen variable 
-; Parameters:		  varName
+; Parameters:		  ptr_prompt, ptr_varName, VAR_SIZE
 ; Registers changed:  None
 ;------------------------------------------------------------------------------
 
@@ -113,7 +112,7 @@ main PROC
 	push	OFFSET intro
 	call	introduction
 
-MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
+MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-153
 
 ; Request 10 numbers from the user
 	push	OFFSET testedNum
@@ -151,7 +150,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
-	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-71
+	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-115
 
 ; Function that says "Good-bye"
 	push	OFFSET byePrompt
@@ -168,12 +167,12 @@ main ENDP
 ;------------------------------------------------------------------------------
 ; introduction
 ;
-; Description:       Prints the Introductory message
+; Description:       Prints the Introductory message using displayString macro
 ; Pre-conditions:	 4 string pointers pushed onto stack
 ; Post-conditions:	 none
 ; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 ;					 PARAM_3: OFFSET instruct
-; Registers changed: edx
+; Registers changed: none
 ;------------------------------------------------------------------------------
 
 introduction PROC
@@ -181,6 +180,7 @@ introduction PROC
 ; Print the title message
 	push	ebp
 	mov		ebp, esp
+    push    edx
 	call	CrLf
 	displayString PARAM_1
 
@@ -193,6 +193,7 @@ introduction PROC
 	call	CrLf
 	displayString PARAM_3
 	call	CrLf
+    pop     edx
 	pop		ebp
 	ret		3 * TYPE PARAM_1
 
@@ -202,13 +203,14 @@ introduction ENDP
 ;------------------------------------------------------------------------------
 ; readVal
 ;
-; Description:       
-; Pre-conditions:	 
-; Post-conditions:	 
+; Description:       Converts a string from stdin into a 32 bit signed integer
+;                    and loops until a valid number is entered
+; Pre-conditions:	 Necessary parameters pushed onto the stack in order
+; Post-conditions:	 Valid 32bit signed integer stored in testedNum
 ; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
 ;					 PARAM_3: OFFSET userPrompt, PARAM_4: OFFSET errMsg
 ;					 PARAM_5: OFFSET errPrompt, PARAM_6: OFFSET testedNum
-; Registers changed: 
+; Registers changed: none
 ;------------------------------------------------------------------------------
 
 readVal PROC
@@ -335,13 +337,13 @@ readVal ENDP
 ; getValues
 ;
 ; Description:       Gets 10 valid numbers and stores them in an array
-; Pre-conditions:	 
-; Post-conditions:	 
+; Pre-conditions:	 Necessary parameters pushed onto the stack in order
+; Post-conditions:	 10 valid 32bit signed integers stored in numArray
 ; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
 ;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
 ;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errMsg
 ;					 PARAM_7: OFFSET errPrompt, PARAM_8: OFFSET testedNum
-; Registers changed: 
+; Registers changed: none
 ;------------------------------------------------------------------------------
 
 getValues PROC
@@ -349,6 +351,7 @@ getValues PROC
 ; Set up registers
 	push	ebp
 	mov		ebp, esp
+	pushad
 	mov		ecx, PARAM_4
 	mov		edi, PARAM_3
 	mov		esi, PARAM_1
@@ -372,6 +375,7 @@ FILL_LOOP:																			; Loop From: line-
 	loop	FILL_LOOP																; Loop
 
 ; Clean up and return
+	popad
 	pop		ebp
 	ret		8 * TYPE DWORD
 
@@ -381,12 +385,12 @@ getValues ENDP
 ;------------------------------------------------------------------------------
 ; calculations
 ;
-; Description:        
-; Pre-conditions:	  
-; Post-conditions:	  
+; Description:        Calculates the sum and average of numArray
+; Pre-conditions:	  Necessary parameters pushed onto the stack in order
+; Post-conditions:	  Sum stored in numSum and rounded average stored in numAvg
 ; Parameters:		  PARAM_1: OFFSET numArray, PARAM_2: ARRAY_SIZE (value)
 ;					  PARAM_3: OFFSET numSum, PARAM_4: OFFSET numAvg
-; Registers changed:  
+; Registers changed:  none
 ;------------------------------------------------------------------------------
 
 calculations PROC
@@ -394,6 +398,7 @@ calculations PROC
 ; Set up registers
 	push	ebp
 	mov		ebp, esp
+	pushad
 	mov		edi, [PARAM_1]
 	mov		ecx, PARAM_2
 	mov		eax, 0
@@ -438,6 +443,7 @@ AVERAGE_FINISHED:																	; jmp
 	mov		[ebx], eax
 
 ; Clean up and return
+	popad
 	pop		ebp
 	ret		4 * TYPE DWORD
 
@@ -546,7 +552,7 @@ printRslt ENDP
 ; Pre-conditions:	  quitPrompt pushed onto stack
 ; Post-conditions:	  quitVal stored in eax upon return
 ; Parameters:		  PARAM_1: OFFSET quitPrompt
-; Registers changed:  edx, eax
+; Registers changed:  eax
 ;------------------------------------------------------------------------------
 
 quit PROC
@@ -554,11 +560,13 @@ quit PROC
 ; Set up message in edx
 	push	ebp
 	mov		ebp, esp
+	push	edx
 	displayString PARAM_1
 
 ; Prompt the user and return bool in eax
 	call	ReadInt
 	call	CrLf
+	pop		edx
 	pop		ebp
 	ret		1 * TYPE PARAM_1
 
@@ -572,7 +580,7 @@ quit ENDP
 ; Pre-conditions:	  byePrompt pushed onto stack
 ; Post-conditions:	  none
 ; Parameters:		  PARAM_1: OFFSET byePrompt
-; Registers changed:  edx
+; Registers changed:  none
 ;------------------------------------------------------------------------------
 
 farewell PROC															
@@ -580,10 +588,12 @@ farewell PROC
 ; Set up message in edx
 	push	ebp
 	mov		ebp, esp
+	push	edx
 	displayString PARAM_1
 
 ; Print the Goodbye message
 	call	CrLf
+	pop		edx
 	pop		ebp
 	ret		1 * TYPE PARAM_1
 
