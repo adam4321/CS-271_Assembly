@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-10-2020
+; Last Modified:				3-11-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -394,8 +394,31 @@ calculations PROC
 ; Set up registers
 	push	ebp
 	mov		ebp, esp
+	mov		edi, [PARAM_1]
+	mov		ecx, PARAM_2
+	mov		eax, 0
 
+SUM_lOOP:																			; Loop
 
+; Sum up the values in the array
+	mov		ebx, [edi]
+	add		eax, ebx
+	add		edi, 4
+	loop	SUM_LOOP																; Loop
+
+; Store sum in numSum
+	mov		ebx, [PARAM_3]
+	mov		[ebx], eax
+
+; Calculate the average
+	mov		ebx, PARAM_2
+	cdq
+	mov		edx, 0
+	div		ebx
+
+; Store the average in numAvg
+	mov		ebx, [PARAM_4]
+	mov		[ebx], eax
 
 ; Clean up and return
 	pop		ebp
