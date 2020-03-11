@@ -91,12 +91,12 @@ errMsg		BYTE	"ERROR: You did not enter a signed number or "
 errPrompt	BYTE	"Please try again: ", 0
 listMsg		BYTE	"You entered the following numbers: ", 0
 sumMsg		BYTE	"The sum of these numbers is: ", 0
-avgMsg		BYTE	"The rounded average is: "
+avgMsg		BYTE	"The rounded average is: ", 0
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
 numArray	SDWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
-strTest		BYTE	31 DUP(?), 0													; Empty string for receiving user input
+strTemp		BYTE	STR_SIZE DUP(?), 0												; Empty string for receiving user input
 testedNum	SDWORD	0																; Variable for receiving a validated number
 numSum		SDWORD	0																; Variable for receiving the sum of the entered numbers
 numAvg		SDWORD	0																; Variable for receiving the average of the entered numbers
@@ -123,15 +123,23 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 	push	ARRAY_SIZE
 	push	OFFSET numArray
 	push	STR_SIZE
-	push	OFFSET strTest
+	push	OFFSET strTemp
 	call	getValues
 
 ; Calculate sum and average
+	push	OFFSET numAvg
+	push	OFFSET numSum
+	push	ARRAY_SIZE
+	push	OFFSET numArray
 	call	calculations
 
 ; Display the results
+	push	OFFSET strTemp
+    push    OFFSET numAvg
 	push	OFFSET avgMsg
-	push	
+    push    OFFSET numSum
+	push	OFFSET sumMsg
+    push    OFFSET numArray
 	push	OFFSET listMsg
 	call	printRslt
 
@@ -196,7 +204,7 @@ introduction ENDP
 ; Description:       
 ; Pre-conditions:	 
 ; Post-conditions:	 
-; Parameters:		 PARAM_1: OFFSET strTest, PARAM_2: STR_SIZE (value)
+; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
 ;					 PARAM_3: OFFSET userPrompt, PARAM_4: OFFSET errMsg
 ;					 PARAM_5: OFFSET errPrompt, PARAM_6: OFFSET testedNum
 ; Registers changed: 
@@ -328,7 +336,7 @@ readVal ENDP
 ; Description:       Gets 10 valid numbers and stores them in an array
 ; Pre-conditions:	 
 ; Post-conditions:	 
-; Parameters:		 PARAM_1: OFFSET strTest, PARAM_2: STR_SIZE (value)
+; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
 ;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
 ;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errMsg
 ;					 PARAM_7: OFFSET errPrompt, PARAM_8: OFFSET testedNum
@@ -375,8 +383,8 @@ getValues ENDP
 ; Description:        
 ; Pre-conditions:	  
 ; Post-conditions:	  
-; Parameters:		  PARAM_1: , PARAM_2: 
-;					  PARAM_3: 
+; Parameters:		  PARAM_1: OFFSET numArray, PARAM_2: ARRAY_SIZE (value)
+;					  PARAM_3: OFFSET numSum, PARAM_4: OFFSET numAvg
 ; Registers changed:  
 ;------------------------------------------------------------------------------
 
@@ -386,7 +394,7 @@ calculations PROC
 	push	ebp
 	mov		ebp, esp
 
-	
+
 
 ; Clean up and return
 	pop		ebp
@@ -416,7 +424,7 @@ writeVal PROC
 
 ; Clean up and return
 	pop		ebp
-	ret		
+	ret		2 * TYPE DWORD
 
 writeVal ENDP
 
@@ -427,8 +435,10 @@ writeVal ENDP
 ; Description:        
 ; Pre-conditions:	  
 ; Post-conditions:	  
-; Parameters:		  PARAM_1: , PARAM_2: 
-;					  PARAM_3: 
+; Parameters:		 PARAM_1: OFFSET listMsg, PARAM_2: numArray
+;					 PARAM_3: OFFSET sumMsg, PARAM_4: numSum
+;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
+;					 PARAM_7: OFFSET strTemp
 ; Registers changed:  
 ;------------------------------------------------------------------------------
 
@@ -439,17 +449,34 @@ printRslt PROC
 	mov		ebp, esp
 
 ; Display entered numbers
-		
+	displayString PARAM_1
+	call	CrLf
+
+PRINT_LOOP:
+
+; Convert and print each array value
+	
+	loop	PRINT_LOOP
 
 ; Display the sum
-
+	call	CrLf
+    displayString PARAM_3
+	push	PARAM_7
+	push	PARAM_4
+	call	writeVal
 
 ; Display the average
-
+	call	CrLf
+    displayString PARAM_5
+	push	PARAM_7
+	push	PARAM_6
+	call	writeVal
 
 ; Clean up and return
+	call	CrLf
+	call	CrLf
 	pop		ebp
-	ret		
+	ret		7 * TYPE DWORD
 
 printRslt ENDP
 
@@ -472,12 +499,9 @@ quit PROC
 	mov		ebp, esp
 	displayString PARAM_1
 
-; Reset variables for potential next running
-	mov		numSum, 0
-	mov		numAvg, 0
-
 ; Prompt the user and return bool in eax
 	call	ReadInt
+	call	CrLf
 	pop		ebp
 	ret		1 * TYPE PARAM_1
 
@@ -497,7 +521,6 @@ quit ENDP
 farewell PROC															
 
 ; Set up message in edx
-	call	CrLf
 	push	ebp
 	mov		ebp, esp
 	displayString PARAM_1
