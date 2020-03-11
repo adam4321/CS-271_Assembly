@@ -18,7 +18,8 @@ INCLUDE Irvine32.inc
 
 ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
 STR_SIZE = 31																		; Constant holding the input size
-NEG_CONVERT = -1																	; Constant holding the negative conversion coefficient
+MAX_INT = 2147483647																; Constant holding the max size of SDWORD
+MIN_INT = -2147483648																; Constant holding the min size of SDWORD
 
 PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
 PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
@@ -54,7 +55,7 @@ ENDM
 ; getString
 ;
 ; Description:        MACRO that prompts the user for a string while storing 
-;					  and restoring edx
+;					  and restoring ecx and edx
 ; Pre-conditions:	  Parameter passed is a variable to hold the address of a 
 ;					  string
 ; Post-conditions:	  String stored in the chosen variable 
@@ -96,12 +97,11 @@ avgMsg		BYTE	"The rounded average is: "
 quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
-numArray	DWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
+numArray	SDWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
 strTest		BYTE	31 DUP(?), 0													; Empty string for receiving user input
-testedNum	DWORD	0																; Variable for receiving a validated number
-numSum		DWORD	0																; Variable for receiving the sum of the entered numbers
-numAvg		DWORD	0																; Variable for receiving the average of the entered numbers
-isNeg		DWORD	0																; Variable 
+testedNum	SDWORD	0																; Variable for receiving a validated number
+numSum		SDWORD	0																; Variable for receiving the sum of the entered numbers
+numAvg		SDWORD	0																; Variable for receiving the average of the entered numbers
 
 
 ;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
@@ -204,8 +204,6 @@ readVal PROC
 	push	ebp
 	mov		ebp, esp
 	pushad
-	mov		ecx, PARAM_4
-	mov		edi, PARAM_3
 	mov		esi, PARAM_1
 
 ; Call macro to get user number
@@ -233,60 +231,88 @@ VALIDATE:																			; jmp
 ; Pull the first byte and check for negative
 	lodsb
 	cmp		al, 45
-	je		REMOVE_MINUS																; jmp
+	je		REMOVE_MINUS															; jmp
 	cmp		al, 43
 	je		REMOVE_PLUS
-	jmp		POSITIVE																; jmp
+	jmp		NO_SIGN																	; jmp
 	
 REMOVE_MINUS:
 
 ; Pull off the minus sign
-	lodsb
 	dec		ecx
 	jmp		NEGATIVE
 
 REMOVE_PLUS:
 
 ; Pull off the plus sign
-	lodsb
 	dec		ecx
+	jmp		POSITIVE
+
+NO_SIGN:
+
+; Pull off nothing and reload first byte
+	dec		esi
 	jmp		POSITIVE
 
 NEGATIVE:																			; jmp
 
 ; Validate possible negative value
+	lodsb
 	cmp		al, 48
 	jl		ERROR_PROMPT
 	cmp		al, 57
 	jg		ERROR_PROMPT
 	
 ; Process valid negative digit
+	sub		al, 48
+	movzx	edi, al
+	mov		eax, edx
+	mul		ebx
+	add		eax, edi
+	mov		edx, eax
+	loop	NEGATIVE
 
-	jmp		VALID_NUMBER
-
-
+; Mul by -1 to turn number negative
+	mov		ebx, -1
+	mul		ebx
+	mov		edx, eax
+	jmp		NUMBER_RANGE
 
 POSITIVE:
 
 ; Validate possible positive value
+	lodsb
 	cmp		al, 48
 	jl		ERROR_PROMPT
 	cmp		al, 57
 	jg		ERROR_PROMPT
 
 ; Process valid positive digit
+	sub		al, 48
+	movzx	edi, al
+	mov		eax, edx
+	mul		ebx
+	add		eax, edi
+	mov		edx, eax
+	loop	POSITIVE
+
+NUMBER_RANGE:
+
+; Check that the number is between min and max int size
+	cmp		edx, 2147483647
+	jg		ERROR_PROMPT
+	cmp		edx, -2147483648
+	jl		ERROR_PROMPT
 	
-
-
-
-
-VALID_NUMBER:
+; Store validated number in testedNum
+	mov		eax, [PARAM_6]
+	mov		[eax], edx
 
 ; Clean up and return
 	call	CrLf
 	popad
 	pop		ebp
-	ret		6 * TYPE PARAM_1
+	ret		6 * TYPE DWORD
 
 readVal ENDP
 
@@ -333,7 +359,7 @@ FILL_LOOP:																			; Loop From: line-
 
 ; Clean up and return
 	pop		ebp
-	ret		8 * TYPE PARAM_1
+	ret		8 * TYPE DWORD
 
 getValues ENDP
 
