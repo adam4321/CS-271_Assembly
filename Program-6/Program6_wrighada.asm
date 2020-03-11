@@ -411,7 +411,6 @@ calculations ENDP
 ; Pre-conditions:	  
 ; Post-conditions:	  
 ; Parameters:		  PARAM_1: , PARAM_2: 
-;					  PARAM_3: 
 ; Registers changed:  
 ;------------------------------------------------------------------------------
 
@@ -421,7 +420,7 @@ writeVal PROC
 	push	ebp
 	mov		ebp, esp
 
-	
+
 
 ; Clean up and return
 	pop		ebp
@@ -461,9 +460,20 @@ PRINT_LOOP:																			; Loop
 
 ; Convert and print each array value
 	push	PARAM_7
-	push	PARAM_2
+	push	edi
 	call	writeVal
+
+; Print a comma after the first 9 numbers
+	cmp		ecx, 1
+	je		ARRAY_FINISHED															; jmp
+	mov		al, 44
+	call	writeChar
+	mov		al, 32
+	call	writeChar
+	add		edi, 4
 	loop	PRINT_LOOP																; Loop
+
+ARRAY_FINISHED:																		; jmp
 
 ; Display the sum
 	call	CrLf
