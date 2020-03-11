@@ -134,6 +134,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
 	call	calculations
 
 ; Display the results
+    push    ARRAY_SIZE
 	push	OFFSET strTemp
     push    OFFSET numAvg
 	push	OFFSET avgMsg
@@ -438,7 +439,7 @@ writeVal ENDP
 ; Parameters:		 PARAM_1: OFFSET listMsg, PARAM_2: numArray
 ;					 PARAM_3: OFFSET sumMsg, PARAM_4: numSum
 ;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
-;					 PARAM_7: OFFSET strTemp
+;					 PARAM_7: OFFSET strTemp, PARAM_8: ARRAY_SIZE (value)
 ; Registers changed:  
 ;------------------------------------------------------------------------------
 
@@ -451,6 +452,10 @@ printRslt PROC
 ; Display entered numbers
 	displayString PARAM_1
 	call	CrLf
+
+; Set up array printing
+    mov    ecx, PARAM_8
+    mov     edi, [PARAM_2]     
 
 PRINT_LOOP:
 
