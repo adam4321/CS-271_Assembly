@@ -26,7 +26,6 @@ PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
 PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
 PARAM_7 EQU [ebp + 32]																; Explicit stack offset for parameter 7
 PARAM_8 EQU [ebp + 36]																; Explicit stack offset for parameter 8
-PARAM_9 EQU [ebp + 40]																; Explicit stack offset for parameter 9
 
 
 ;  -------------------------------------------------------------------------------	; MACRO DEFINITIONS
@@ -504,7 +503,30 @@ FILL_POSITIVE:
 NEGATIVE_INT:
 
 ; Process a negative signed int to string
+	cdq
+	idiv	ebx
+	neg		edx
+	add		edx, 48
+	push	edx
 
+; Quotient == 0, then digit is finished
+	cmp		eax, 0
+	jne		NEGATIVE_INT
+
+; Add minus sign to negative number string
+	mov		al, 45
+	mov		[edi], al
+	inc		edi
+
+FILL_NEGATIVE:
+
+; Pop the positive numbers from the stack
+	pop		[edi]
+	mov		eax, [edi]
+	inc		edi
+	cmp		eax, 0
+	jne		FILL_NEGATIVE
+	jmp		FINISH_CONVERT
 
 
 
@@ -522,7 +544,7 @@ FINISH_CONVERT:
 	cld
 	popad
 	pop		ebp
-	ret		3 * TYPE DWORD
+	ret		2 * TYPE DWORD
 
 writeVal ENDP
 
@@ -538,7 +560,6 @@ writeVal ENDP
 ;					 PARAM_3: OFFSET sumMsg, PARAM_4: OFFSET numSum
 ;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
 ;					 PARAM_7: OFFSET strTemp, PARAM_8: ARRAY_SIZE (value)
-;					 PARAM_9: STR_SIZE (value)
 ; Registers changed: None
 ;------------------------------------------------------------------------------
 
@@ -560,7 +581,6 @@ printRslt PROC
 PRINT_LOOP:																			; LOOP through number array From: line-
 
 ; Convert and print each array value
-	push	PARAM_9
 	push	PARAM_7
 	push	[edi]
 	call	writeVal
@@ -581,7 +601,6 @@ ARRAY_FINISHED:																		; After the array is printed JMP From: line-
 	call	CrLf
     displayString PARAM_3
 	mov		edi, [PARAM_4]
-	push	PARAM_9
 	push	PARAM_7
 	push	[edi]
 	call	writeVal
@@ -590,7 +609,6 @@ ARRAY_FINISHED:																		; After the array is printed JMP From: line-
 	call	CrLf
     displayString PARAM_5
 	mov		edi, [PARAM_6]
-	push	PARAM_9
 	push	PARAM_7
 	push	[edi]
 	call	writeVal
@@ -600,7 +618,7 @@ ARRAY_FINISHED:																		; After the array is printed JMP From: line-
 	call	CrLf
 	popad
 	pop		ebp
-	ret		9 * TYPE DWORD
+	ret		8 * TYPE DWORD
 
 printRslt ENDP
 
