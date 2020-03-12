@@ -475,9 +475,9 @@ writeVal PROC
 
 ; Check for sign of number
 	cmp		eax, 0
-	jl		NEGATIVE_INT															; JMP
+	jl		NEGATIVE_INT															; If int < 0, then JMP To: line-
 
-POSITIVE_INT:																		; JMP
+POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-
 
 ; Process a positive signed int digit
 	cdq
@@ -487,18 +487,18 @@ POSITIVE_INT:																		; JMP
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		POSITIVE_INT															; JMP
+	jne		POSITIVE_INT															; More positive bytes to process JMP To: line-
 
-FILL_POSITIVE:																		; JMP
+FILL_POSITIVE:																		; Fill positive number string JMP From: line- 
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_POSITIVE															; JMP
-	jmp		FINISH_CONVERT															; JMP
+	jne		FILL_POSITIVE															; More positive bytes JMP To: line-
+	jmp		FINISH_CONVERT															; Positive string created JMP To: line-
 
-NEGATIVE_INT:																		; JMP
+NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-
 
 ; Process a negative signed int to string
 	cdq
@@ -509,23 +509,23 @@ NEGATIVE_INT:																		; JMP
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		NEGATIVE_INT															; JMP
+	jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-
 
 ; Add minus sign to negative number string
 	mov		al, 45
 	mov		[edi], al
 	inc		edi
 
-FILL_NEGATIVE:																		; JMP
+FILL_NEGATIVE:																		; Fill negative number string JMP From: line-
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_NEGATIVE															; JMP
-	jmp		FINISH_CONVERT															; JMP
+	jne		FILL_NEGATIVE															; More negative bytes JMP To: line-
+	jmp		FINISH_CONVERT															; Negative number string created JMP To: line-
 
-FINISH_CONVERT:																		; JMP
+FINISH_CONVERT:																		; Number string created JMP From: line-
 
 ; Print the string to the console
 	displayString PARAM_2
