@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-11-2020
+; Last Modified:				3-12-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -459,7 +459,6 @@ calculations ENDP
 ; Pre-conditions:	  Necessary parameters pushed onto the stack in order
 ; Post-conditions:	  Numbers converted to string and printed to console
 ; Parameters:		  PARAM_1: number (value), PARAM_2: OFFSET strTemp
-;					  PARAM_3: STR_SIZE (value)
 ; Registers changed:  None
 ;------------------------------------------------------------------------------
 
