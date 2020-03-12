@@ -476,9 +476,9 @@ writeVal PROC
 
 ; Check for sign of number
 	cmp		eax, 0
-	jl		NEGATIVE_INT
+	jl		NEGATIVE_INT															; JMP
 
-POSITIVE_INT:
+POSITIVE_INT:																		; JMP
 
 ; Process a positive signed int digit
 	cdq
@@ -488,19 +488,18 @@ POSITIVE_INT:
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		POSITIVE_INT
+	jne		POSITIVE_INT															; JMP
 
-FILL_POSITIVE:
+FILL_POSITIVE:																		; JMP
 
 ; Pop the positive numbers from the stack
-	pop		[edi]
-	mov		eax, [edi]
-	inc		edi
+	pop		eax
+	stosb
 	cmp		eax, 0
-	jne		FILL_POSITIVE
-	jmp		FINISH_CONVERT
+	jne		FILL_POSITIVE															; JMP
+	jmp		FINISH_CONVERT															; JMP
 
-NEGATIVE_INT:
+NEGATIVE_INT:																		; JMP
 
 ; Process a negative signed int to string
 	cdq
@@ -511,34 +510,26 @@ NEGATIVE_INT:
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		NEGATIVE_INT
+	jne		NEGATIVE_INT															; JMP
 
 ; Add minus sign to negative number string
 	mov		al, 45
 	mov		[edi], al
 	inc		edi
 
-FILL_NEGATIVE:
+FILL_NEGATIVE:																		; JMP
 
 ; Pop the positive numbers from the stack
-	pop		[edi]
-	mov		eax, [edi]
-	inc		edi
+	pop		eax
+	stosb
 	cmp		eax, 0
-	jne		FILL_NEGATIVE
-	jmp		FINISH_CONVERT
+	jne		FILL_NEGATIVE															; JMP
+	jmp		FINISH_CONVERT															; JMP
 
-
-
-
-
-FINISH_CONVERT:
+FINISH_CONVERT:																		; JMP
 
 ; Print the string to the console
 	displayString PARAM_2
-
-	;mov		eax, PARAM_1
-	;call	writeInt
 
 ; Clean up and return
 	cld
