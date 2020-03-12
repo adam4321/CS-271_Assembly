@@ -26,6 +26,7 @@ PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
 PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
 PARAM_7 EQU [ebp + 32]																; Explicit stack offset for parameter 7
 PARAM_8 EQU [ebp + 36]																; Explicit stack offset for parameter 8
+PARAM_9 EQU [ebp + 40]																; Explicit stack offset for parameter 9
 
 
 ;  -------------------------------------------------------------------------------	; MACRO DEFINITIONS
@@ -133,6 +134,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-153
 	call	calculations
 
 ; Display the results
+	push	STR_SIZE
     push    ARRAY_SIZE
 	push	OFFSET strTemp
     push    OFFSET numAvg
@@ -457,7 +459,8 @@ calculations ENDP
 ;					  it to the console using displayString
 ; Pre-conditions:	  Necessary parameters pushed onto the stack in order
 ; Post-conditions:	  Numbers converted to string and printed to console
-; Parameters:		  PARAM_1: address of a string, PARAM_2: OFFSET strTemp
+; Parameters:		  PARAM_1: number (value), PARAM_2: OFFSET strTemp
+;					  PARAM_3: STR_SIZE (value)
 ; Registers changed:  none
 ;------------------------------------------------------------------------------
 
@@ -467,13 +470,44 @@ writeVal PROC
 	push	ebp
 	mov		ebp, esp
 	pushad
+	mov		edi, PARAM_2
+	add		edi, (PARAM_3 - 1)
+	mov		eax, [PARAM_1]
+	mov		ebx, 10
 
+; Check for sign of number
+	cmp		eax, 0
+	jl		NEGATIVE_INT
+
+POSITIVE_INT:
+
+; Process a positive signed int to string
+	cdq
+	idiv	ebx
+	cmp		eax, 0
+	jmp		FINISH_CONVERT
+
+NEGATIVE_INT:
+
+; Process a negative signed int to string
+
+
+
+FINISH_CONVERT:
+
+; Print the string to the console
+	;displayString PARAM_2
+
+
+
+	mov		eax, PARAM_1				; REMOVE!!! TESTING!
+	call	WriteInt					; REMOVE!!! TESTING!
 
 
 ; Clean up and return
 	popad
 	pop		ebp
-	ret		2 * TYPE DWORD
+	ret		3 * TYPE DWORD
 
 writeVal ENDP
 
@@ -485,10 +519,11 @@ writeVal ENDP
 ;					 messages. It calls writeVal to convert the numbers to strings
 ; Pre-conditions:	 Necessary parameters pushed onto the stack in order
 ; Post-conditions:	 The array, sum, and average are printed to the console
-; Parameters:		 PARAM_1: OFFSET listMsg, PARAM_2: numArray
-;					 PARAM_3: OFFSET sumMsg, PARAM_4: numSum
+; Parameters:		 PARAM_1: OFFSET listMsg, PARAM_2: OFFSET numArray
+;					 PARAM_3: OFFSET sumMsg, PARAM_4: OFFSET numSum
 ;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
 ;					 PARAM_7: OFFSET strTemp, PARAM_8: ARRAY_SIZE (value)
+;					 PARAM_9: STR_SIZE (value)
 ; Registers changed: none
 ;------------------------------------------------------------------------------
 
@@ -510,8 +545,9 @@ printRslt PROC
 PRINT_LOOP:																			; LOOP through number array From: line-
 
 ; Convert and print each array value
+	push	PARAM_9
 	push	PARAM_7
-	push	edi
+	push	[edi]
 	call	writeVal
 
 ; Print a comma after the first 9 numbers
@@ -529,15 +565,19 @@ ARRAY_FINISHED:																		; After the array is printed JMP From: line-
 ; Display the sum
 	call	CrLf
     displayString PARAM_3
+	mov		edi, [PARAM_4]
+	push	PARAM_9
 	push	PARAM_7
-	push	PARAM_4
+	push	[edi]
 	call	writeVal
 
 ; Display the average
 	call	CrLf
     displayString PARAM_5
+	mov		edi, [PARAM_6]
+	push	PARAM_9
 	push	PARAM_7
-	push	PARAM_6
+	push	[edi]
 	call	writeVal
 
 ; Clean up and return
@@ -545,7 +585,7 @@ ARRAY_FINISHED:																		; After the array is printed JMP From: line-
 	call	CrLf
 	popad
 	pop		ebp
-	ret		8 * TYPE DWORD
+	ret		9 * TYPE DWORD
 
 printRslt ENDP
 
