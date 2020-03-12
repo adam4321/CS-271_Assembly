@@ -470,8 +470,9 @@ writeVal PROC
 	push	ebp
 	mov		ebp, esp
 	pushad
+	std
 	mov		edi, PARAM_2
-	add		edi, (PARAM_3 - 1)
+	add		edi, 31 * TYPE PARAM_3
 	mov		eax, [PARAM_1]
 	mov		ebx, 10
 
@@ -481,11 +482,24 @@ writeVal PROC
 
 POSITIVE_INT:
 
-; Process a positive signed int to string
+; Process a positive signed int digit
 	cdq
 	idiv	ebx
+	add		edx, 48
+	mov		ecx, eax
+	mov		eax, edx
+	stosb
+	dec		edi
+
+; Quotient == 0, then digit is finished
+	mov		eax, ecx
 	cmp		eax, 0
+	jne		POSITIVE_INT
 	jmp		FINISH_CONVERT
+
+
+
+
 
 NEGATIVE_INT:
 
@@ -493,18 +507,19 @@ NEGATIVE_INT:
 
 
 
+
+
+
 FINISH_CONVERT:
 
 ; Print the string to the console
-	;displayString PARAM_2
+	displayString PARAM_2
 
-
-
-	mov		eax, PARAM_1				; REMOVE!!! TESTING!
-	call	WriteInt					; REMOVE!!! TESTING!
-
+	;mov		eax, PARAM_1
+	;call	writeInt
 
 ; Clean up and return
+	cld
 	popad
 	pop		ebp
 	ret		3 * TYPE DWORD
