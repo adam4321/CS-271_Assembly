@@ -171,10 +171,10 @@ main ENDP
 ;
 ; Description:       Prints the Introductory message using displayString macro
 ; Pre-conditions:	 4 string pointers pushed onto stack
-; Post-conditions:	 none
+; Post-conditions:	 Introduction printed
 ; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 ;					 PARAM_3: OFFSET instruct
-; Registers changed: none
+; Registers changed: None
 ;------------------------------------------------------------------------------
 
 introduction PROC
@@ -212,7 +212,7 @@ introduction ENDP
 ; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
 ;					 PARAM_3: OFFSET userPrompt, PARAM_4: OFFSET errMsg
 ;					 PARAM_5: OFFSET errPrompt, PARAM_6: OFFSET testedNum
-; Registers changed: none
+; Registers changed: None
 ;------------------------------------------------------------------------------
 
 readVal PROC
@@ -345,7 +345,7 @@ readVal ENDP
 ;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
 ;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errMsg
 ;					 PARAM_7: OFFSET errPrompt, PARAM_8: OFFSET testedNum
-; Registers changed: none
+; Registers changed: None
 ;------------------------------------------------------------------------------
 
 getValues PROC
@@ -392,7 +392,7 @@ getValues ENDP
 ; Post-conditions:	  Sum stored in numSum and rounded average stored in numAvg
 ; Parameters:		  PARAM_1: OFFSET numArray, PARAM_2: ARRAY_SIZE (value)
 ;					  PARAM_3: OFFSET numSum, PARAM_4: OFFSET numAvg
-; Registers changed:  none
+; Registers changed:  None
 ;------------------------------------------------------------------------------
 
 calculations PROC
@@ -461,7 +461,7 @@ calculations ENDP
 ; Post-conditions:	  Numbers converted to string and printed to console
 ; Parameters:		  PARAM_1: number (value), PARAM_2: OFFSET strTemp
 ;					  PARAM_3: STR_SIZE (value)
-; Registers changed:  none
+; Registers changed:  None
 ;------------------------------------------------------------------------------
 
 writeVal PROC
@@ -470,11 +470,10 @@ writeVal PROC
 	push	ebp
 	mov		ebp, esp
 	pushad
-	std
-	mov		edi, PARAM_2
-	add		edi, 31 * TYPE PARAM_3
 	mov		eax, [PARAM_1]
+	mov		edi, [PARAM_2]
 	mov		ebx, 10
+	push	0
 
 ; Check for sign of number
 	cmp		eax, 0
@@ -486,20 +485,21 @@ POSITIVE_INT:
 	cdq
 	idiv	ebx
 	add		edx, 48
-	mov		ecx, eax
-	mov		eax, edx
-	stosb
-	dec		edi
+	push	edx
 
 ; Quotient == 0, then digit is finished
-	mov		eax, ecx
 	cmp		eax, 0
 	jne		POSITIVE_INT
+
+FILL_POSITIVE:
+
+; Pop the positive numbers from the stack
+	pop		[edi]
+	mov		eax, [edi]
+	inc		edi
+	cmp		eax, 0
+	jne		FILL_POSITIVE
 	jmp		FINISH_CONVERT
-
-
-
-
 
 NEGATIVE_INT:
 
@@ -539,7 +539,7 @@ writeVal ENDP
 ;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
 ;					 PARAM_7: OFFSET strTemp, PARAM_8: ARRAY_SIZE (value)
 ;					 PARAM_9: STR_SIZE (value)
-; Registers changed: none
+; Registers changed: None
 ;------------------------------------------------------------------------------
 
 printRslt PROC
@@ -639,9 +639,9 @@ quit ENDP
 ;
 ; Description:        Prints the Goodbye message
 ; Pre-conditions:	  byePrompt pushed onto stack
-; Post-conditions:	  none
+; Post-conditions:	  Goodbye printed
 ; Parameters:		  PARAM_1: OFFSET byePrompt
-; Registers changed:  none
+; Registers changed:  None
 ;------------------------------------------------------------------------------
 
 farewell PROC															
