@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-12-2020
+; Last Modified:				3-13-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -112,7 +112,7 @@ main PROC
 	push	OFFSET intro
 	call	introduction
 
-MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-155
+MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-154
 
 ; Request 10 numbers from the user
 	push	OFFSET testedNum
@@ -151,7 +151,7 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-155
 
 ; Check the value set in the quit procedure
 	cmp		quitVal, 1
-	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-116
+	jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-115
 
 ; Function that says "Good-bye"
 	push	OFFSET byePrompt
@@ -229,9 +229,9 @@ readVal PROC
 	mov		ecx, eax
 	mov		esi, [PARAM_1]
 	cld
-	jmp		VALIDATE																; First attempt at prompt JMP To: line-247
+	jmp		VALIDATE																; First attempt at prompt JMP To: line-246
 
-ERROR_PROMPT:																		; After invalid entry JMP From: line-280, 282, 304, 306, 321, 323
+ERROR_PROMPT:																		; After invalid entry JMP From: line-279, 281, 303, 305, 320, 322
 
 ; Print error and request a valid number
 	call	CrLf
@@ -243,87 +243,87 @@ ERROR_PROMPT:																		; After invalid entry JMP From: line-280, 282, 30
 	mov		esi, [PARAM_1]
 	cld
 
-VALIDATE:																			; Check the leading byte JMP From: line-233
+VALIDATE:																			; Check the leading byte JMP From: line-232
 
 ; Pull the first byte and check for negative
 	lodsb
 	cmp		al, 45
-	je		REMOVE_MINUS															; Leading Minus JMP To: line-257
+	je		REMOVE_MINUS															; Leading Minus JMP To: line-256
 	cmp		al, 43
-	je		REMOVE_PLUS																; Leading Plus JMP To: line-263
-	jmp		NO_SIGN																	; No leading sign JMP To: line-269
+	je		REMOVE_PLUS																; Leading Plus JMP To: line-262
+	jmp		NO_SIGN																	; No leading sign JMP To: line-268
 	
-REMOVE_MINUS:																		; Negative number JMP From: line-252
+REMOVE_MINUS:																		; Negative number JMP From: line-251
 
 ; Pull off the minus sign
 	dec		ecx
 	jmp		NEGATIVE
 
-REMOVE_PLUS:																		; Positive number with '+' JMP From: line-254
+REMOVE_PLUS:																		; Positive number with '+' JMP From: line-253
 
 ; Pull off the plus sign
 	dec		ecx
 	jmp		POSITIVE
 
-NO_SIGN:																			; No sign JMP From: line-255
+NO_SIGN:																			; No sign JMP From: line-254
 
 ; Pull off nothing and reload first byte
 	dec		esi
-	jmp		POSITIVE																; Process positive value JMP To: line-299
+	jmp		POSITIVE																; Process positive value JMP To: line-298
 
-NEGATIVE:																			; Process negative value LOOP From: line-291
+NEGATIVE:																			; Process negative value LOOP From: line-290
 
 ; Validate possible negative value
 	lodsb
 	cmp		al, 48
-	jl		ERROR_PROMPT															; Invalid char JMP To: line-235
+	jl		ERROR_PROMPT															; Invalid char JMP To: line-234
 	cmp		al, 57
-	jg		ERROR_PROMPT															; Invalid char JMP To: line-235
+	jg		ERROR_PROMPT															; Invalid char JMP To: line-234
 	
 ; Process valid negative digit
 	sub		al, 48
 	movzx	edi, al
 	mov		eax, edx
 	mul		ebx
-	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-
+	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-234
 	add		eax, edi
-	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-
+	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-234
 	mov		edx, eax
-	loop	NEGATIVE																; LOOP through negative string To: line-275
+	loop	NEGATIVE																; LOOP through negative string To: line-274
 
 ; Mul by -1 to turn number negative
 	mov		ebx, -1
 	mul		ebx
 	mov		edx, eax
-	jmp		NUMBER_RANGE															; Negative number converted, now must check range JMP To: line-317
+	jmp		NUMBER_RANGE															; Negative number converted, now must check range JMP To: line-320
 
-POSITIVE:																			; Process positive value LOOP From: line-315
+POSITIVE:																			; Process positive value LOOP From: line-318
 
 ; Validate possible positive value
 	lodsb
 	cmp		al, 48
-	jl		ERROR_PROMPT															; Invalid char JMP To: line-235
+	jl		ERROR_PROMPT															; Invalid char JMP To: line-234
 	cmp		al, 57
-	jg		ERROR_PROMPT															; Invalid char JMP To: line-235
+	jg		ERROR_PROMPT															; Invalid char JMP To: line-234
 
 ; Process valid positive digit
 	sub		al, 48
 	movsx	edi, al
 	mov		eax, edx
 	mul		ebx
-	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-
+	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-234
 	add		eax, edi
-	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-
+	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-234
 	mov		edx, eax
-	loop	POSITIVE																; LOOP To: line-299
+	loop	POSITIVE																; LOOP To: line-300
 
-NUMBER_RANGE:																		; Check converted number's range JMP From: line-297
+NUMBER_RANGE:																		; Check converted number's range JMP From: line-298
 
 ; Check that the number is between min and max int size
 	cmp		edx, 2147483647
-	jg		ERROR_PROMPT															; Number above signed 32bit size JMP To: line-235
+	jg		ERROR_PROMPT															; Number above signed 32bit size JMP To: line-234
 	cmp		edx, -2147483648
-	jl		ERROR_PROMPT															
+	jl		ERROR_PROMPT															; Number below signed 32bit size JMP To: line-234	
 	
 ; Store validated number in testedNum
 	mov		eax, [PARAM_6]
@@ -361,7 +361,7 @@ getValues PROC
 	mov		edi, PARAM_3
 	mov		esi, PARAM_1
 
-FILL_LOOP:																			; For filling the array LOOP From: line-377
+FILL_LOOP:																			; For filling the array LOOP From: line-380
 
 ; Call proc to get string and return num in testedNum
 	push	PARAM_8
@@ -377,7 +377,7 @@ FILL_LOOP:																			; For filling the array LOOP From: line-377
 	mov		ebx, [eax]
 	mov		[edi], ebx
 	add		edi, 4
-	loop	FILL_LOOP																; LOOP To: line-361
+	loop	FILL_LOOP																; LOOP To: line-364
 
 ; Clean up and return
 	popad
@@ -408,13 +408,13 @@ calculations PROC
 	mov		ecx, PARAM_2
 	mov		eax, 0
 
-SUM_lOOP:																			; LOOP through array From: line-414
+SUM_lOOP:																			; LOOP through array From: line-417
 
 ; Sum up the values in the array
 	mov		ebx, [edi]
 	add		eax, ebx
 	add		edi, 4
-	loop	SUM_LOOP																; LOOP To: line-408
+	loop	SUM_LOOP																; LOOP To: line-411
 
 ; Store sum in numSum
 	mov		ebx, [PARAM_3]
@@ -425,23 +425,23 @@ SUM_lOOP:																			; LOOP through array From: line-414
 	cdq
 	idiv	ebx
 	cmp		eax, 0
-	jl		ROUND_NEGATIVE															; If negative JMP To: line-433
+	jl		ROUND_NEGATIVE															; If negative JMP To: line-436
 
 ; Round >= 0.5 up to next integer
 	cmp		edx, 5
-	jl		AVERAGE_FINISHED														; If positive remainder < 0.5 JMP To: line-441
+	jl		AVERAGE_FINISHED														; If positive remainder < 0.5 JMP To: line-444
 	inc		eax
-	jmp		AVERAGE_FINISHED														; After rounding JMP To: line-441
+	jmp		AVERAGE_FINISHED														; After rounding JMP To: line-444
 
-ROUND_NEGATIVE:																		; JMP From: line-425
+ROUND_NEGATIVE:																		; JMP From: line-428
 
 ; Round <= 0.5 down to next lower integer
 	neg		edx
 	cmp		edx, 5
-	jl		AVERAGE_FINISHED														; If negative remainder < 0.5 JMP To: line-441
+	jl		AVERAGE_FINISHED														; If negative remainder < 0.5 JMP To: line-444
 	dec		eax
 
-AVERAGE_FINISHED:																	; JMP From: line-429, 431, 438
+AVERAGE_FINISHED:																	; JMP From: line-432, 434, 441
 
 ; Store the average in numAvg
 	mov		ebx, [PARAM_4]
@@ -479,9 +479,9 @@ writeVal PROC
 
 ; Check for sign of number
 	cmp		eax, 0
-	jl		NEGATIVE_INT															; If int < 0, then JMP To: line-
+	jl		NEGATIVE_INT															; If int < 0, then JMP To: line-505
 
-POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-
+POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-494
 
 ; Process a positive signed int digit
 	cdq
@@ -491,18 +491,18 @@ POSITIVE_INT:																		; Loop to create positive number byte JMP From: l
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		POSITIVE_INT															; More positive bytes to process JMP To: line-
+	jne		POSITIVE_INT															; More positive bytes to process JMP To: line-484
 
-FILL_POSITIVE:																		; Fill positive number string JMP From: line- 
+FILL_POSITIVE:																		; Fill positive number string JMP From: line-502
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_POSITIVE															; More positive bytes JMP To: line-
-	jmp		FINISH_CONVERT															; Positive string created JMP To: line-
+	jne		FILL_POSITIVE															; More positive bytes JMP To: line-496
+	jmp		FINISH_CONVERT															; Positive string created JMP To: line-532
 
-NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-
+NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-516
 
 ; Process a negative signed int to string
 	cdq
@@ -513,23 +513,23 @@ NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: 
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-
+	jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-505
 
 ; Add minus sign to negative number string
 	mov		al, 45
 	mov		[edi], al
 	inc		edi
 
-FILL_NEGATIVE:																		; Fill negative number string JMP From: line-
+FILL_NEGATIVE:																		; Fill negative number string JMP From: line-529
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_NEGATIVE															; More negative bytes JMP To: line-
-	jmp		FINISH_CONVERT															; Negative number string created JMP To: line-
+	jne		FILL_NEGATIVE															; More negative bytes JMP To: line-523
+	jmp		FINISH_CONVERT															; Negative number string created JMP To: line-532
 
-FINISH_CONVERT:																		; Number string created JMP From: line-
+FINISH_CONVERT:																		; Number string created JMP From: line-503, 530
 
 ; Print the string to the console
 	displayString PARAM_2
@@ -572,7 +572,7 @@ printRslt PROC
     mov		ecx, PARAM_8
     mov     edi, [PARAM_2]     
 
-PRINT_LOOP:																			; LOOP through number array From: line-
+PRINT_LOOP:																			; LOOP through number array From: line-590
 
 ; Convert and print each array value
 	push	PARAM_7
@@ -581,15 +581,15 @@ PRINT_LOOP:																			; LOOP through number array From: line-
 
 ; Print a comma after the first 9 numbers
 	cmp		ecx, 1
-	je		ARRAY_FINISHED															; After 9th comma JMP To: line-
+	je		ARRAY_FINISHED															; After 9th comma JMP To: line-592
 	mov		al, 44
 	call	writeChar
 	mov		al, 32
 	call	writeChar
 	add		edi, 4
-	loop	PRINT_LOOP																; LOOP To: line-
+	loop	PRINT_LOOP																; LOOP To: line-575
 
-ARRAY_FINISHED:																		; After the array is printed JMP From: line-
+ARRAY_FINISHED:																		; After the array is printed JMP From: line-584
 
 ; Display the sum
 	call	CrLf
