@@ -285,7 +285,9 @@ NEGATIVE:																			; Process negative value LOOP From: line-291
 	movzx	edi, al
 	mov		eax, edx
 	mul		ebx
+	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-
 	add		eax, edi
+	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-
 	mov		edx, eax
 	loop	NEGATIVE																; LOOP through negative string To: line-275
 
@@ -309,7 +311,9 @@ POSITIVE:																			; Process positive value LOOP From: line-315
 	movsx	edi, al
 	mov		eax, edx
 	mul		ebx
+	jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-
 	add		eax, edi
+	jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-
 	mov		edx, eax
 	loop	POSITIVE																; LOOP To: line-299
 
@@ -319,7 +323,7 @@ NUMBER_RANGE:																		; Check converted number's range JMP From: line-2
 	cmp		edx, 2147483647
 	jg		ERROR_PROMPT															; Number above signed 32bit size JMP To: line-235
 	cmp		edx, -2147483648
-	jl		ERROR_PROMPT															; Number below signed 32bit size JMP To: line-235
+	jl		ERROR_PROMPT															
 	
 ; Store validated number in testedNum
 	mov		eax, [PARAM_6]
