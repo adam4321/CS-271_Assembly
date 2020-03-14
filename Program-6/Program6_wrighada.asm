@@ -97,8 +97,8 @@ quitVal		DWORD	1																; Integer holding 1 to quit or any other value t
 numArray	SDWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
 strTemp		BYTE	STR_SIZE DUP(?), 0												; Empty string for receiving user input
 testedNum	SDWORD	0																; Variable for receiving a validated number
-numSum		SDWORD	0																; Variable for receiving the sum of the entered numbers
-numAvg		SDWORD	0																; Variable for receiving the average of the entered numbers
+numSum		SDWORD	0																; Variable for receiving the sum of the verified numbers
+numAvg		SDWORD	0																; Variable for receiving the average of the verified numbers
 
 
 ;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
@@ -114,7 +114,7 @@ main PROC
 
 MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-154
 
-; Request 10 numbers from the user
+; Request and validate 10 SDWORD from the user
 	push	OFFSET testedNum
 	push	OFFSET errPrompt
 	push	OFFSET errMsg
@@ -125,14 +125,14 @@ MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-154
 	push	OFFSET strTemp
 	call	getValues
 
-; Calculate sum and average
+; Calculate sum and average of numbers
 	push	OFFSET numAvg
 	push	OFFSET numSum
 	push	ARRAY_SIZE
 	push	OFFSET numArray
 	call	calculations
 
-; Display the results
+; Display the results to the console
 	push	STR_SIZE
     push    ARRAY_SIZE
 	push	OFFSET strTemp
@@ -222,7 +222,7 @@ readVal PROC
 	pushad
 	mov		esi, PARAM_1
 
-; Call macro to get user number
+; Call macro to request a number
 	getString PARAM_3, PARAM_1, PARAM_2
 	mov		edx, 0
 	mov		ebx, 10
@@ -255,13 +255,13 @@ VALIDATE:																			; Check the leading byte JMP From: line-232
 	
 REMOVE_MINUS:																		; Negative number JMP From: line-251
 
-; Pull off the minus sign
+; Pull off a minus sign
 	dec		ecx
 	jmp		NEGATIVE
 
 REMOVE_PLUS:																		; Positive number with '+' JMP From: line-253
 
-; Pull off the plus sign
+; Pull off a plus sign
 	dec		ecx
 	jmp		POSITIVE
 
@@ -273,7 +273,7 @@ NO_SIGN:																			; No sign JMP From: line-254
 
 NEGATIVE:																			; Process negative value LOOP From: line-290
 
-; Validate possible negative value
+; Validate possible negative entry
 	lodsb
 	cmp		al, 48
 	jl		ERROR_PROMPT															; Invalid char JMP To: line-234
