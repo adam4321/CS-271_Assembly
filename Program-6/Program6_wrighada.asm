@@ -291,9 +291,8 @@ NEGATIVE:																			; Process negative value LOOP From: line-290
 	mov		edx, eax
 	loop	NEGATIVE																; LOOP through negative string To: line-274
 
-; Mul by -1 to turn number negative
-	mov		ebx, -1
-	mul		ebx
+; Turn processed number negative
+	neg		eax
 	mov		edx, eax
 	jmp		NUMBER_RANGE															; Negative number converted, now must check range JMP To: line-320
 
