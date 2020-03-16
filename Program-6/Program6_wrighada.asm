@@ -1,7 +1,7 @@
 TITLE Program 6                 Program6_wrighada.asm
 
 ; Author:						Adam Wright
-; Last Modified:				3-14-2020
+; Last Modified:				3-15-2020
 ; OSU email address:			wrighada@oregonstate.edu
 ; Course number/section:		cs271-400
 ; Project Number:               6  
@@ -471,6 +471,7 @@ writeVal PROC
 	push	ebp
 	mov		ebp, esp
 	pushad
+	cld
 	mov		eax, [PARAM_1]
 	mov		edi, [PARAM_2]
 	mov		ebx, 10
@@ -478,9 +479,9 @@ writeVal PROC
 
 ; Check for sign of number
 	cmp		eax, 0
-	jl		NEGATIVE_INT															; If int < 0, then JMP To: line-504
+	jl		NEGATIVE_INT															; If int < 0, then JMP To: line-505
 
-POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-493
+POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-494
 
 ; Process a positive signed int digit
 	cdq
@@ -490,18 +491,18 @@ POSITIVE_INT:																		; Loop to create positive number byte JMP From: l
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		POSITIVE_INT															; More positive bytes to process JMP To: line-483
+	jne		POSITIVE_INT															; More positive bytes to process JMP To: line-484
 
-FILL_POSITIVE:																		; Fill positive number string JMP From: line-501
+FILL_POSITIVE:																		; Fill positive number string JMP From: line-502
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_POSITIVE															; More positive bytes JMP To: line-495
-	jmp		FINISH_CONVERT															; Positive string created JMP To: line-531
+	jne		FILL_POSITIVE															; More positive bytes JMP To: line-496
+	jmp		FINISH_CONVERT															; Positive string created JMP To: line-532
 
-NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-515
+NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-516
 
 ; Process a negative signed int to string
 	cdq
@@ -512,29 +513,28 @@ NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: 
 
 ; Quotient == 0, then digit is finished
 	cmp		eax, 0
-	jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-504
+	jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-505
 
 ; Add minus sign to negative number string
 	mov		al, 45
 	mov		[edi], al
 	inc		edi
 
-FILL_NEGATIVE:																		; Fill negative number string JMP From: line-528
+FILL_NEGATIVE:																		; Fill negative number string JMP From: line-529
 
 ; Pop the positive numbers from the stack
 	pop		eax
 	stosb
 	cmp		eax, 0
-	jne		FILL_NEGATIVE															; More negative bytes JMP To: line-522
-	jmp		FINISH_CONVERT															; Negative number string created JMP To: line-531
+	jne		FILL_NEGATIVE															; More negative bytes JMP To: line-523
+	jmp		FINISH_CONVERT															; Negative number string created JMP To: line-532
 
-FINISH_CONVERT:																		; Number string created JMP From: line-502, 529
+FINISH_CONVERT:																		; Number string created JMP From: line-502, 530
 
 ; Print the string to the console
 	displayString PARAM_2
 
 ; Clean up and return
-	cld
 	popad
 	pop		ebp
 	ret		2 * TYPE DWORD
