@@ -169,7 +169,7 @@ main ENDP
 ; introduction
 ;
 ; Description:       Prints the Introductory message using displayString macro
-; Pre-conditions:	 4 string pointers pushed onto stack
+; Pre-conditions:	 3 string pointers pushed onto stack
 ; Post-conditions:	 Introduction printed
 ; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 ;					 PARAM_3: OFFSET instruct
@@ -371,7 +371,7 @@ FILL_LOOP:																			; For filling the array LOOP From: line-379
 	push	PARAM_1
 	call	readVal
 
-; Number passed validation so add it to the array
+; Number passed validation, so add it to the array
 	mov		eax, [PARAM_8]
 	mov		ebx, [eax]
 	mov		[edi], ebx
