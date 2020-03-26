@@ -1,9 +1,10 @@
 TITLE Dog Years     (Project00.asm)
 
 ; Author: Lassie
-; Course / Project ID : Demo #0                Date: xx/xx/xx
-; Description:  This program will introduce the programmer, get the user's name and age,
-;	calculate the user's "dog age", and report the result.
+; Course / Project ID : Demo #0                
+; Date: xx/xx/xx
+; Description:      This program will introduce the programmer, get the user's name and age,
+;	                calculate the user's "dog age", and report the result.
 
 INCLUDE Irvine32.inc
 
@@ -64,7 +65,7 @@ main PROC
 	call	WriteString
 	call	CrLf
 
-	exit	; exit to operating system
+	exit	                            ; exit to operating system
 main ENDP
 
 END main
