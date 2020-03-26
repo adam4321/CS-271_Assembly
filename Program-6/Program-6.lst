@@ -1,16 +1,18 @@
-Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
+Microsoft (R) Macro Assembler Version 14.24.28315.0	    03/15/20 23:11:55
 /Program 6                 Program6_wrighada.as		     Page 1 - 1
 
 
 				TITLE Program 6                 Program6_wrighada.asm
 
 				; Author:						Adam Wright
-				; Last Modified:				2-24-2020
+				; Last Modified:				3-15-2020
 				; OSU email address:			wrighada@oregonstate.edu
 				; Course number/section:		cs271-400
 				; Project Number:               6  
 				; Due Date:						3-15-2020
-				; Description:					Assembly program which 
+				; Description:					Assembly program which requests 10 32 bit signed 
+				;								integers from the user and then prints the list,
+				;								the sum, and then the average of those numbers
 
 
 				INCLUDE Irvine32.inc
@@ -32,123 +34,183 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 			      C .LIST
 			      C 
 
-
 				;  -------------------------------------------------------------------------------  ; CONSTANT DEFINITIONS
 
- = 000000C8			ARRAY_SIZE = 200																	; Constant holding the highest possible value for input
- = 0000000A			RANGE_LO = 10																		; Constant holding the lowest possible random num in array
- = 0000001D			RANGE_HI = 29																		; Constant holding the highest possible random num in array
- = 00000014			COUNT_LIST_SIZE = 20																; Constant holding the size of the occurance list
+ = 0000000A			ARRAY_SIZE = 10 																	; Constant holding the number of values to gather
+ = 0000001F			STR_SIZE = 31																		; Constant holding the input size
 
  = [ebp + 8]			PARAM_1 EQU [ebp + 8]																; Explicit stack offset for parameter 1
  = [ebp + 12]			PARAM_2 EQU [ebp + 12]																; Explicit stack offset for parameter 2
  = [ebp + 16]			PARAM_3 EQU [ebp + 16]																; Explicit stack offset for parameter 3
  = [ebp + 20]			PARAM_4 EQU [ebp + 20]																; Explicit stack offset for parameter 4
+ = [ebp + 24]			PARAM_5 EQU [ebp + 24]																; Explicit stack offset for parameter 5
+ = [ebp + 28]			PARAM_6 EQU [ebp + 28]																; Explicit stack offset for parameter 6
+ = [ebp + 32]			PARAM_7 EQU [ebp + 32]																; Explicit stack offset for parameter 7
+ = [ebp + 36]			PARAM_8 EQU [ebp + 36]																; Explicit stack offset for parameter 8
+
+
+				;  -------------------------------------------------------------------------------	; MACRO DEFINITIONS
+
+				;------------------------------------------------------------------------------
+				; displayString
+				;
+				; Description:        MACRO that prints a string while storing and restoring edx
+				; Pre-conditions:	  Parameter passed is the address of an array
+				; Post-conditions:	  String printed to the console
+				; Parameters:		  ptr_buffer
+				; Registers changed:  None
+				;------------------------------------------------------------------------------
+
+				displayString MACRO ptr_buffer
+					push	edx
+					mov		edx, ptr_buffer
+					call	WriteString
+					pop		edx
+				ENDM
+
+
+				;------------------------------------------------------------------------------
+				; getString
+				;
+				; Description:        MACRO that prompts the user for a string while 
+				;					  storing and restoring ecx and edx
+				; Pre-conditions:	  Parameter passed is a variable to hold the  
+				;					  address of a string
+				; Post-conditions:	  String stored in the chosen variable 
+				; Parameters:		  ptr_prompt, ptr_varName, VAR_SIZE
+				; Registers changed:  None
+				;------------------------------------------------------------------------------
+
+				getString MACRO ptr_prompt, ptr_varName, VAR_SIZE
+				    push    ecx
+				    push    edx
+					displayString ptr_prompt
+				    mov     edx, ptr_varName
+					mov		ecx, VAR_SIZE
+					call	ReadString
+					pop		edx
+					pop		ecx
+				ENDM
 
 
 				;  -------------------------------------------------------------------------------  ; VARIABLE DEFINITIONS
 
  00000000			.data																				
- 00000000 2A 2A 20 50 72	intro		BYTE	"** Program-6 -- Array Sorting **", 0
+ 00000000 2A 2A 20 50 72	intro		BYTE	"** Program-6 -- Designing low-level I/O procedures **", 0
 	   6F 67 72 61 6D
 	   2D 36 20 2D 2D
-	   20 41 72 72 61
-	   79 20 53 6F 72
-	   74 69 6E 67 20
-	   2A 2A 00
- 00000021 2A 2A 20 50 72	programmer	BYTE	"** Programmed by Adam Wright  **", 0
+	   20 44 65 73 69
+	   67 6E 69 6E 67
+	   20 6C 6F 77 2D
+	   6C 65 76 65 6C
+	   20 49 2F 4F 20
+	   70 72 6F 63 65
+	   64 75 72 65 73
+	   20 2A 2A 00
+ 00000036 2A 2A 20 50 72	programmer	BYTE	"** Programmed by Adam Wright **", 0
 	   6F 67 72 61 6D
 	   6D 65 64 20 62
 	   79 20 41 64 61
 	   6D 20 57 72 69
-	   67 68 74 20 20
-	   2A 2A 00
- 00000042 54 68 69 73 20	instruct	BYTE	"This program generates 200 random numbers in the range "
-	   70 72 6F 67 72
-	   61 6D 20 67 65
-	   6E 65 72 61 74
-	   65 73 20 32 30
-	   30 20 72 61 6E
-	   64 6F 6D 20 6E
+	   67 68 74 20 2A
+	   2A 00
+ 00000056 50 6C 65 61 73	instruct	BYTE	"Please provide 10 signed decimal integers.", 0dh, 0ah
+	   65 20 70 72 6F
+	   76 69 64 65 20
+	   31 30 20 73 69
+	   67 6E 65 64 20
+	   64 65 63 69 6D
+	   61 6C 20 69 6E
+	   74 65 67 65 72
+	   73 2E 0D 0A
+ 00000082  45 61 63 68 20				BYTE	"Each number needs to be small enough "
+	   6E 75 6D 62 65
+	   72 20 6E 65 65
+	   64 73 20 74 6F
+	   20 62 65 20 73
+	   6D 61 6C 6C 20
+	   65 6E 6F 75 67
+	   68 20
+ 000000A7  74 6F 20 66 69				BYTE	"to fit inside a 32 bit register.", 0dh, 0ah
+	   74 20 69 6E 73
+	   69 64 65 20 61
+	   20 33 32 20 62
+	   69 74 20 72 65
+	   67 69 73 74 65
+	   72 2E 0D 0A
+ 000000C9  41 66 74 65 72				BYTE	"After you have finished inputting the raw numbers "
+	   20 79 6F 75 20
+	   68 61 76 65 20
+	   66 69 6E 69 73
+	   68 65 64 20 69
+	   6E 70 75 74 74
+	   69 6E 67 20 74
+	   68 65 20 72 61
+	   77 20 6E 75 6D
+	   62 65 72 73 20
+ 000000FB  49 20 77 69 6C				BYTE	"I will display a list", 0dh, 0ah
+	   6C 20 64 69 73
+	   70 6C 61 79 20
+	   61 20 6C 69 73
+	   74 0D 0A
+ 00000112  6F 66 20 74 68				BYTE	"of the integers, their sum, "
+	   65 20 69 6E 74
+	   65 67 65 72 73
+	   2C 20 74 68 65
+	   69 72 20 73 75
+	   6D 2C 20
+ 0000012E  61 6E 64 20 74				BYTE	"and their average value.", 0dh, 0ah, 0
+	   68 65 69 72 20
+	   61 76 65 72 61
+	   67 65 20 76 61
+	   6C 75 65 2E 0D
+	   0A 00
+ 00000149 50 6C 65 61 73	userPrompt	BYTE	"Please enter a signed number: ", 0
+	   65 20 65 6E 74
+	   65 72 20 61 20
+	   73 69 67 6E 65
+	   64 20 6E 75 6D
+	   62 65 72 3A 20
+	   00
+ 00000168 45 52 52 4F 52	errMsg		BYTE	"ERROR: You did not enter a signed number or "
+	   3A 20 59 6F 75
+	   20 64 69 64 20
+	   6E 6F 74 20 65
+	   6E 74 65 72 20
+	   61 20 73 69 67
+	   6E 65 64 20 6E
 	   75 6D 62 65 72
-	   73 20 69 6E 20
-	   74 68 65 20 72
-	   61 6E 67 65 20
- 00000079  5B 31 30 20 2E				BYTE	"[10 ... 29], displays the original list, ", 0dh, 0ah
-	   2E 2E 20 32 39
-	   5D 2C 20 64 69
-	   73 70 6C 61 79
-	   73 20 74 68 65
-	   20 6F 72 69 67
-	   69 6E 61 6C 20
-	   6C 69 73 74 2C
-	   20 0D 0A
- 000000A4  73 6F 72 74 73				BYTE	"sorts the list, displays the median value, displays "
-	   20 74 68 65 20
-	   6C 69 73 74 2C
-	   20 64 69 73 70
-	   6C 61 79 73 20
-	   74 68 65 20 6D
-	   65 64 69 61 6E
-	   20 76 61 6C 75
-	   65 2C 20 64 69
-	   73 70 6C 61 79
-	   73 20
- 000000D8  74 68 65 20 6C				BYTE	"the list sorted in ascending order, then ", 0dh, 0ah
-	   69 73 74 20 73
-	   6F 72 74 65 64
-	   20 69 6E 20 61
-	   73 63 65 6E 64
-	   69 6E 67 20 6F
-	   72 64 65 72 2C
-	   20 74 68 65 6E
-	   20 0D 0A
- 00000103  64 69 73 70 6C				BYTE	"displays the number of instances of each generated "
-	   61 79 73 20 74
-	   68 65 20 6E 75
-	   6D 62 65 72 20
-	   6F 66 20 69 6E
-	   73 74 61 6E 63
-	   65 73 20 6F 66
-	   20 65 61 63 68
-	   20 67 65 6E 65
-	   72 61 74 65 64
-	   20
- 00000136  76 61 6C 75 65				BYTE	"value.", 0
-	   2E 00
- 0000013D 59 6F 75 72 20	unsortMsg	BYTE	"Your unsorted random numbers:", 0
-	   75 6E 73 6F 72
-	   74 65 64 20 72
-	   61 6E 64 6F 6D
-	   20 6E 75 6D 62
-	   65 72 73 3A 00
- 0000015B 4C 69 73 74 20	medianMsg	BYTE	"List Median: ", 0
-	   4D 65 64 69 61
+	   20 6F 72 20
+ 00000194  79 6F 75 72 20				BYTE	"your number was too big.", 0dh, 0ah, 0
+	   6E 75 6D 62 65
+	   72 20 77 61 73
+	   20 74 6F 6F 20
+	   62 69 67 2E 0D
+	   0A 00
+ 000001AF 50 6C 65 61 73	errPrompt	BYTE	"Please try again: ", 0
+	   65 20 74 72 79
+	   20 61 67 61 69
 	   6E 3A 20 00
- 00000169 59 6F 75 72 20	sortMsg		BYTE	"Your sorted random numbers:", 0
-	   73 6F 72 74 65
-	   64 20 72 61 6E
-	   64 6F 6D 20 6E
-	   75 6D 62 65 72
-	   73 3A 00
- 00000185 59 6F 75 72 20	listMsg		BYTE	"Your list of instances of each generated number, "
-	   6C 69 73 74 20
-	   6F 66 20 69 6E
-	   73 74 61 6E 63
-	   65 73 20 6F 66
-	   20 65 61 63 68
-	   20 67 65 6E 65
-	   72 61 74 65 64
+ 000001C2 59 6F 75 20 65	listMsg		BYTE	"You entered the following numbers: ", 0
+	   6E 74 65 72 65
+	   64 20 74 68 65
+	   20 66 6F 6C 6C
+	   6F 77 69 6E 67
 	   20 6E 75 6D 62
-	   65 72 2C 20
- 000001B6  73 74 61 72 74				BYTE	"starting with the number of 10s:", 0
-	   69 6E 67 20 77
-	   69 74 68 20 74
-	   68 65 20 6E 75
-	   6D 62 65 72 20
-	   6F 66 20 31 30
-	   73 3A 00
- 000001D7 50 72 65 73 73	quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
+	   65 72 73 3A 20
+	   00
+ 000001E6 54 68 65 20 73	sumMsg		BYTE	"The sum of these numbers is: ", 0
+	   75 6D 20 6F 66
+	   20 74 68 65 73
+	   65 20 6E 75 6D
+	   62 65 72 73 20
+	   69 73 3A 20 00
+ 00000204 54 68 65 20 72	avgMsg		BYTE	"The rounded average is: ", 0
+	   6F 75 6E 64 65
+	   64 20 61 76 65
+	   72 61 67 65 20
+	   69 73 3A 20 00
+ 0000021D 50 72 65 73 73	quitPrompt	BYTE	"Press 1 to quit and 2 to continue: ", 0
 	   20 31 20 74 6F
 	   20 71 75 69 74
 	   20 61 6E 64 20
@@ -156,7 +218,7 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 	   63 6F 6E 74 69
 	   6E 75 65 3A 20
 	   00
- 000001FB 47 6F 6F 64 2D	byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
+ 00000241 47 6F 6F 64 2D	byePrompt	BYTE	"Good-bye, and thanks for using my program!", 0
 	   62 79 65 2C 20
 	   61 6E 64 20 74
 	   68 61 6E 6B 73
@@ -165,13 +227,16 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 	   20 6D 79 20 70
 	   72 6F 67 72 61
 	   6D 21 00
- 00000226  000000C8 [		array		DWORD	ARRAY_SIZE DUP(?)												; Empty array of DWORDS to hold the number array
+ 0000026C 00000001		quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
+ 00000270  0000000A [		numArray	SDWORD	ARRAY_SIZE DUP(?)												; Empty array for holding the entered and verified numbers
 	    00000000
 	   ]
- 00000546  00000014 [		numCounts	DWORD	20 DUP(?)														; Empty array
-	    00000000
-	   ]
- 00000596 00000001		quitVal		DWORD	1																; Integer holding 1 to quit or any other value to continue
+ 00000298  0000001F [		strTemp		BYTE	STR_SIZE DUP(?), 0												; Empty string for receiving user input
+	    00
+	   ] 00
+ 000002B8 00000000		testedNum	SDWORD	0																; Variable for receiving a validated number
+ 000002BC 00000000		numSum		SDWORD	0																; Variable for receiving the sum of the verified numbers
+ 000002C0 00000000		numAvg		SDWORD	0																; Variable for receiving the average of the verified numbers
 
 
 				;  -------------------------------------------------------------------------------  ; EXECUTABLE INSTRUCTIONS
@@ -179,80 +244,64 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
  00000000			.code
  00000000			main PROC
 
-				; Seed the Irvine library random function
- 00000000  E8 00000000 E		call	Randomize
-
 				; Introduce title, programmer, and instructions
- 00000005  68 00000042 R		push	OFFSET instruct
- 0000000A  68 00000021 R		push	OFFSET programmer
- 0000000F  68 00000000 R		push	OFFSET intro
- 00000014  E8 000000B2			call	introduction
+ 00000000  68 00000056 R		push	OFFSET instruct
+ 00000005  68 00000036 R		push	OFFSET programmer
+ 0000000A  68 00000000 R		push	OFFSET intro
+ 0000000F  E8 00000096			call	introduction
 
- 00000019			MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-123
+ 00000014			MAIN_LOOP:																			; Restart (quitVal == 1) JMP From: line-154
 
-				; Fill the array with random numbers between 10-29
- 00000019  68 000000C8			push	ARRAY_SIZE
- 0000001E  6A 1D			push	RANGE_HI
- 00000020  6A 0A			push	RANGE_LO
- 00000022  68 00000226 R		push	OFFSET array
- 00000027  E8 000000D5			call	fillArray
+				; Request and validate 10 SDWORD from the user
+ 00000014  68 000002B8 R		push	OFFSET testedNum
+ 00000019  68 000001AF R		push	OFFSET errPrompt
+ 0000001E  68 00000168 R		push	OFFSET errMsg
+ 00000023  68 00000149 R		push	OFFSET userPrompt
+ 00000028  6A 0A			push	ARRAY_SIZE
+ 0000002A  68 00000270 R		push	OFFSET numArray
+ 0000002F  6A 1F			push	STR_SIZE
+ 00000031  68 00000298 R		push	OFFSET strTemp
+ 00000036  E8 00000198			call	getValues
 
-				; Print the unsorted array
- 0000002C  68 0000013D R		push	OFFSET unsortMsg
- 00000031  68 000000C8			push	ARRAY_SIZE
- 00000036  68 00000226 R		push	OFFSET array
- 0000003B  E8 000000E2			call	displayList
+				; Calculate sum and average of numbers
+ 0000003B  68 000002C0 R		push	OFFSET numAvg
+ 00000040  68 000002BC R		push	OFFSET numSum
+ 00000045  6A 0A			push	ARRAY_SIZE
+ 00000047  68 00000270 R		push	OFFSET numArray
+ 0000004C  E8 000001B7			call	calculations
 
-				; Sort the array from low to high
- 00000040  68 000000C8			push	ARRAY_SIZE
- 00000045  68 00000226 R		push	OFFSET array
- 0000004A  E8 00000126			call	sortList
-
-				; Calculate and print the median value
- 0000004F  68 0000015B R		push	OFFSET medianMsg
- 00000054  68 000000C8			push	ARRAY_SIZE
- 00000059  68 00000226 R		push	OFFSET array
- 0000005E  E8 00000155			call	displayMedian
-
-				; Print the sorted array
- 00000063  68 00000169 R		push	OFFSET sortMsg
- 00000068  68 000000C8			push	ARRAY_SIZE
- 0000006D  68 00000226 R		push	OFFSET array
- 00000072  E8 000000AB			call	displayList
-
-				; Calculate number occurances 10-19
- 00000077  6A 0A			push	RANGE_LO
- 00000079  68 00000546 R		push	OFFSET numCounts
- 0000007E  68 000000C8			push	ARRAY_SIZE
- 00000083  68 00000226 R		push	OFFSET array
- 00000088  E8 0000016D			call	countList
-
-				; Print the number counts 10-29
- 0000008D  68 00000185 R		push	OFFSET listMsg
- 00000092  6A 14			push	COUNT_LIST_SIZE
- 00000094  68 00000546 R		push	OFFSET numCounts
- 00000099  E8 00000084			call	displayList
+				; Display the results to the console
+ 00000051  6A 1F			push	STR_SIZE
+ 00000053  6A 0A		    push    ARRAY_SIZE
+ 00000055  68 00000298 R		push	OFFSET strTemp
+ 0000005A  68 000002C0 R	    push    OFFSET numAvg
+ 0000005F  68 00000204 R		push	OFFSET avgMsg
+ 00000064  68 000002BC R	    push    OFFSET numSum
+ 00000069  68 000001E6 R		push	OFFSET sumMsg
+ 0000006E  68 00000270 R	    push    OFFSET numArray
+ 00000073  68 000001C2 R		push	OFFSET listMsg
+ 00000078  E8 00000224			call	printRslt
 
 				; Ask if the user wants to quit
- 0000009E  68 000001D7 R		push	OFFSET quitPrompt
- 000000A3  E8 00000188			call	quit																	; Returns quitVal bool in eax
- 000000A8  A3 00000596 R		mov		quitVal, eax
+ 0000007D  68 0000021D R		push	OFFSET quitPrompt
+ 00000082  E8 0000029C			call	quit																	; Returns quitVal bool in eax
+ 00000087  A3 0000026C R		mov		quitVal, eax
 
 				; Check the value set in the quit procedure
- 000000AD  83 3D 00000596 R		cmp		quitVal, 1
+ 0000008C  83 3D 0000026C R		cmp		quitVal, 1
 	   01
- 000000B4  0F 85 FFFFFF5F		jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-71
+ 00000093  0F 85 FFFFFF7B		jne		MAIN_LOOP																; Enter 1 to reset JMP To: line-115
 
 				; Function that says "Good-bye"
- 000000BA  68 000001FB R		push	OFFSET byePrompt
- 000000BF  E8 0000017E			call	farewell
+ 00000099  68 00000241 R		push	OFFSET byePrompt
+ 0000009E  E8 0000029B			call	farewell
 
 				; Exit to operating system
 					exit							
- 000000C4  6A 00	   *	    push   +000000000h
- 000000C6  E8 00000000 E   *	    call   ExitProcess
+ 000000A3  6A 00	   *	    push   +000000000h
+ 000000A5  E8 00000000 E   *	    call   ExitProcess
 
- 000000CB			main ENDP
+ 000000AA			main ENDP
 
 
 				;  -------------------------------------------------------------------------------  ; PROCEDURE DEFINITIONS
@@ -260,352 +309,506 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 				;------------------------------------------------------------------------------
 				; introduction
 				;
-				; Description:       Prints the Introductory message
+				; Description:       Prints the Introductory message using displayString macro
 				; Pre-conditions:	 4 string pointers pushed onto stack
-				; Post-conditions:	 none
+				; Post-conditions:	 Introduction printed
 				; Parameters:		 PARAM_1: OFFSET intro, PARAM_2: OFFSET programmer
 				;					 PARAM_3: OFFSET instruct
-				; Registers changed: edx
+				; Registers changed: None
 				;------------------------------------------------------------------------------
 
- 000000CB			introduction PROC
+ 000000AA			introduction PROC
 
 				; Print the title message
- 000000CB  55				push	ebp
- 000000CC  8B EC			mov		ebp, esp
- 000000CE  E8 00000000 E		call	CrLf
- 000000D3  8B 55 08			mov		edx, PARAM_1
- 000000D6  E8 00000000 E		call	WriteString
+ 000000AA  55				push	ebp
+ 000000AB  8B EC			mov		ebp, esp
+ 000000AD  60			    pushad
+ 000000AE  E8 00000000 E		call	CrLf
+					displayString PARAM_1
+ 000000B3  52		     1		push	edx
+ 000000B4  8B 55 08	     1		mov		edx, PARAM_1
+ 000000B7  E8 00000000 E     1		call	WriteString
+ 000000BC  5A		     1		pop		edx
 
 				; Print the programmer message
- 000000DB  E8 00000000 E		call	CrLf
- 000000E0  8B 55 0C			mov		edx, PARAM_2
- 000000E3  E8 00000000 E		call	WriteString
+ 000000BD  E8 00000000 E		call	CrLf
+					displayString PARAM_2
+ 000000C2  52		     1		push	edx
+ 000000C3  8B 55 0C	     1		mov		edx, PARAM_2
+ 000000C6  E8 00000000 E     1		call	WriteString
+ 000000CB  5A		     1		pop		edx
 
 				; Print the instructions and finish
- 000000E8  E8 00000000 E		call	CrLf
- 000000ED  E8 00000000 E		call	CrLf
- 000000F2  8B 55 10			mov		edx, PARAM_3
- 000000F5  E8 00000000 E		call	WriteString
- 000000FA  E8 00000000 E		call	CrLf
- 000000FF  5D				pop		ebp
- 00000100  C3				ret		3 * TYPE PARAM_1
+ 000000CC  E8 00000000 E		call	CrLf
+ 000000D1  E8 00000000 E		call	CrLf
+					displayString PARAM_3
+ 000000D6  52		     1		push	edx
+ 000000D7  8B 55 10	     1		mov		edx, PARAM_3
+ 000000DA  E8 00000000 E     1		call	WriteString
+ 000000DF  5A		     1		pop		edx
+ 000000E0  E8 00000000 E		call	CrLf
+ 000000E5  61			    popad
+ 000000E6  5D				pop		ebp
+ 000000E7  C3				ret		3 * TYPE PARAM_1
 
- 00000101			introduction ENDP
+ 000000E8			introduction ENDP
 
 
 				;------------------------------------------------------------------------------
-				; fillArray
+				; readVal
 				;
-				; Description:       Fill 200 numbers each between 10-29
-				; Pre-conditions:	 array, LO range, HI range, and ARRAY_SIZE on stack
-				; Post-conditions:	 array filled with 200 values in range 10-29
-				; Parameters:		 PARAM_1: OFFSET array, PARAM_2: RANGE_LO (value)
-				;					 PARAM_3: RANGE_HI (value) PARAM_4: ARRAY_SIZE (value)
-				; Registers changed: eax, ecx, esi
+				; Description:       Converts a string from stdin into a 32 bit signed integer
+				;                    and loops until a valid number is entered
+				; Pre-conditions:	 Necessary parameters pushed onto the stack in order
+				; Post-conditions:	 Valid 32bit signed integer stored in testedNum
+				; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
+				;					 PARAM_3: OFFSET userPrompt, PARAM_4: OFFSET errMsg
+				;					 PARAM_5: OFFSET errPrompt, PARAM_6: OFFSET testedNum
+				; Registers changed: None
 				;------------------------------------------------------------------------------
 
- 00000101			fillArray PROC
+ 000000E8			readVal PROC
 
-				; Set up array filling loop
- 00000101  55				push	ebp
- 00000102  8B EC			mov		ebp, esp
- 00000104  8B 75 08			mov		esi, PARAM_1
- 00000107  8B 4D 14			mov		ecx, PARAM_4
+				; Set up registers
+ 000000E8  55				push	ebp
+ 000000E9  8B EC			mov		ebp, esp
+ 000000EB  60				pushad
+ 000000EC  8B 75 08			mov		esi, PARAM_1
 
- 0000010A			ARRAY_FILL:																			; Next number Loop From: line-205
+				; Call macro to request a number
+					getString PARAM_3, PARAM_1, PARAM_2
+ 000000EF  51		     1	    push    ecx
+ 000000F0  52		     1	    push    edx
+ 000000F1  52		     2		push	edx
+ 000000F2  8B 55 10	     2		mov		edx, PARAM_3
+ 000000F5  E8 00000000 E     2		call	WriteString
+ 000000FA  5A		     2		pop		edx
+ 000000FB  8B 55 08	     1	    mov     edx, PARAM_1
+ 000000FE  8B 4D 0C	     1		mov		ecx, PARAM_2
+ 00000101  E8 00000000 E     1		call	ReadString
+ 00000106  5A		     1		pop		edx
+ 00000107  59		     1		pop		ecx
+ 00000108  BA 00000000			mov		edx, 0
+ 0000010D  BB 0000000A			mov		ebx, 10
+ 00000112  8B C8			mov		ecx, eax
+ 00000114  8B 75 08			mov		esi, [PARAM_1]
+ 00000117  FC				cld
+ 00000118  EB 38			jmp		VALIDATE																; First attempt at this number JMP To: line-246
 
-				; Generate number between 10-29
- 0000010A  8B 45 10			mov		eax, PARAM_3
- 0000010D  2B 45 0C			sub		eax, PARAM_2
- 00000110  40				inc		eax
- 00000111  E8 00000000 E		call	RandomRange
- 00000116  03 45 0C			add		eax, PARAM_2
+ 0000011A			ERROR_PROMPT:																		; After invalid entry JMP From: line-279, 281, 288, 290 304, 306, 323, 325
 
-				; Enter number into array
- 00000119  89 06			mov		[esi], eax
- 0000011B  83 C6 04			add		esi, TYPE DWORD
- 0000011E  E2 EA			loop	ARRAY_FILL																; Loop until 200 JMP To: line-193
+				; Print error and request a valid number
+ 0000011A  E8 00000000 E		call	CrLf
+					displayString PARAM_4
+ 0000011F  52		     1		push	edx
+ 00000120  8B 55 14	     1		mov		edx, PARAM_4
+ 00000123  E8 00000000 E     1		call	WriteString
+ 00000128  5A		     1		pop		edx
+					getString PARAM_5, PARAM_1, PARAM_2
+ 00000129  51		     1	    push    ecx
+ 0000012A  52		     1	    push    edx
+ 0000012B  52		     2		push	edx
+ 0000012C  8B 55 18	     2		mov		edx, PARAM_5
+ 0000012F  E8 00000000 E     2		call	WriteString
+ 00000134  5A		     2		pop		edx
+ 00000135  8B 55 08	     1	    mov     edx, PARAM_1
+ 00000138  8B 4D 0C	     1		mov		ecx, PARAM_2
+ 0000013B  E8 00000000 E     1		call	ReadString
+ 00000140  5A		     1		pop		edx
+ 00000141  59		     1		pop		ecx
+ 00000142  BA 00000000			mov		edx, 0
+ 00000147  BB 0000000A			mov		ebx, 10
+ 0000014C  8B C8			mov		ecx, eax
+ 0000014E  8B 75 08			mov		esi, [PARAM_1]
+ 00000151  FC				cld
 
-				; Exit when array length is reached
- 00000120  5D				pop		ebp
- 00000121  C3				ret		4 * TYPE PARAM_1
+ 00000152			VALIDATE:																			; Check the leading byte JMP From: line-232
 
- 00000122			fillArray ENDP
-
-
-				;------------------------------------------------------------------------------
-				; displayList
-				;
-				; Description:        Print the array 20 numbers per line and two space columns
-				; Pre-conditions:	  OFFSET array, ARRAY_SIZE, unsortMsg on stack
-				; Post-conditions:	  array printed to console
-				; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE 
-				;					  PARAM_3: printing message (unsortMsg, sortMsg or listMsg)
-				; Registers changed:  eax, ebx, ecx, edx, esi
-				;------------------------------------------------------------------------------
-
- 00000122			displayList PROC
-
-				; Set up array pointer and loops
- 00000122  55				push	ebp
- 00000123  8B EC			mov		ebp, esp
- 00000125  8B 75 08			mov		esi, PARAM_1
- 00000128  8B 4D 0C			mov		ecx, PARAM_2
- 0000012B  BB 00000001			mov		ebx, 1
-
-				; Print the unsortMsg
- 00000130  E8 00000000 E		call	CrLf
- 00000135  8B 55 10			mov		edx, PARAM_3
- 00000138  E8 00000000 E		call	WriteString
- 0000013D  E8 00000000 E		call	CrLf
-
- 00000142			PRINT_ARR_1:																		; After number printed JMP From: line-256
-
-				; Print a row of 20 numbers with two white spaces between
- 00000142  8B 06			mov		eax, [esi]
- 00000144  E8 00000000 E		call	WriteDec
- 00000149  B0 20			mov		al, ' '
- 0000014B  E8 00000000 E		call	WriteChar
- 00000150  E8 00000000 E		call	WriteChar
- 00000155  83 FB 14			cmp		ebx, 20
- 00000158  74 08			je		PRINT_CRLF																; After 20 numbers in current row JMP To: line-259
- 0000015A  43				inc		ebx
-
- 0000015B			PRINT_ARR_2:																		; After newline continue From: line-264
-
-				; Increment counters and check loop counter
- 0000015B  83 C6 04			add		esi, TYPE DWORD
- 0000015E  E2 E2			loop	PRINT_ARR_1																; After number printed LOOP To: line-240
- 00000160  EB 0C			jmp		FINISH_PRINT															; After entire array printed JMP To: line-266
-
- 00000162			PRINT_CRLF:																			; After 20 nums JMP From line-249
-				 
-				; Add a newline after 20 numbers
- 00000162  E8 00000000 E		call	CrLf
- 00000167  BB 00000001			mov		ebx, 1
- 0000016C  EB ED			jmp		PRINT_ARR_2																; After newline JMP To: line-252
-
- 0000016E			FINISH_PRINT:																		; Printing finished JMP From: line-257
-
-				; Exit after array printed
- 0000016E  E8 00000000 E		call	CrLf
- 00000173  5D				pop		ebp
- 00000174  C3				ret		3 * TYPE PARAM_1
-
- 00000175			displayList ENDP
-
-
-				;------------------------------------------------------------------------------
-				; sortList
-				;
-				; Description:        Sorts array of DWORD from low to high
-				; Pre-conditions:	  OFFSET array and ARRAY_SIZE on stack
-				; Post-conditions:	  array sorted from low to high
-				; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE
-				; Registers changed:  eax, ecx, esi
-				;------------------------------------------------------------------------------
-
- 00000175			sortList PROC
-
-				; Set array loop to array address
- 00000175  55				push	ebp
- 00000176  8B EC			mov		ebp, esp
- 00000178  8B 4D 0C			mov		ecx, PARAM_2
- 0000017B  49				dec		ecx
-
- 0000017C			OUTER_LOOP:																			; Beginning of array Loop From: line-320 
-
-				; Store ARRAY_SIZE -1 on the stack
- 0000017C  51				push	ecx
- 0000017D  8B 75 08			mov		esi, PARAM_1
-
- 00000180			INNER_LOOP:																			; Continue iteration Loop From: line-318
-
-				; Compare and swap or branch
- 00000180  8B 06			mov		eax, [esi]
- 00000182  39 46 04			cmp		[esi + TYPE DWORD], eax
- 00000185  7F 0D			jg		INCREMENT																; No swap JMP To: line-314
-
-				; Call swap function
- 00000187  83 C6 04			add		esi, TYPE DWORD
- 0000018A  56				push	esi
- 0000018B  83 EE 04			sub		esi, TYPE DWORD
- 0000018E  56				push	esi
- 0000018F  E8 0000000A			call	exchangeElements
-
- 00000194			INCREMENT:																			; No swap JMP From: line-305
-
-				; Increment esi and loop and outer
- 00000194  83 C6 04			add		esi, TYPE DWORD
- 00000197  E2 E7			loop	INNER_LOOP																; Continue sorting pass Loop To: line-300
- 00000199  59				pop		ecx
- 0000019A  E2 E0			loop	OUTER_LOOP																; Next array pass Loop To: line-294
-
-				; Exit when array is sorted
- 0000019C  5D				pop		ebp
- 0000019D  C3				ret		2 * TYPE PARAM_1
-
- 0000019E			sortList ENDP
-
-
-				;------------------------------------------------------------------------------
-				; exchangeElements
-				;
-				; Description:        Swaps two values by reference
-				; Pre-conditions:	  Two array addresses pushed onto stack. 2 * TYPE PARAM_1
-				;					  not working in return. Alternative must be used!
-				; Post-conditions:	  Paramater 1 and 2 are swapped
-				; Parameters:		  PARAM_1: index 1, PARAM_2: index 2  
-				; Registers changed:  eax, ebx, edx
-				;------------------------------------------------------------------------------
-
- 0000019E			exchangeElements PROC
-
-				; Set up the stack frame
- 0000019E  55				push	ebp
- 0000019F  8B EC			mov		ebp, esp
- 000001A1  60				pushad
-
-				; Swap the elements passed by reference
- 000001A2  8B 45 08			mov		eax, [PARAM_1]
- 000001A5  8B 5D 0C			mov		ebx, [PARAM_2]
- 000001A8  8B 10			mov		edx, [eax]
- 000001AA  8B 03			mov		eax, [ebx]
- 000001AC  8B DA			mov		ebx, edx
-
-				; Insert the swapped numbers
- 000001AE  89 06			mov		[esi], eax
- 000001B0  89 5E 04			mov		[esi + TYPE DWORD], ebx
+				; Pull the first byte and check for negative
+ 00000152  AC				lodsb
+ 00000153  3C 2D			cmp		al, 45
+ 00000155  74 06			je		REMOVE_MINUS															; Leading Minus JMP To: line-256
+ 00000157  3C 2B			cmp		al, 43
+ 00000159  74 05			je		REMOVE_PLUS																; Leading Plus JMP To: line-262
+ 0000015B  EB 06			jmp		NO_SIGN																	; No leading sign JMP To: line-268
 					
-				; Exit after swap
- 000001B3  61				popad
- 000001B4  5D				pop		ebp
- 000001B5  C2 0008			ret		2 * TYPE DWORD
+ 0000015D			REMOVE_MINUS:																		; Negative number JMP From: line-251
 
- 000001B8			exchangeElements ENDP
+				; Pull off a minus sign
+ 0000015D  49				dec		ecx
+ 0000015E  EB 06			jmp		NEGATIVE
 
+ 00000160			REMOVE_PLUS:																		; Positive number with '+' JMP From: line-253
 
-				;------------------------------------------------------------------------------
-				; displayMedian
-				;
-				; Description:        Calculates and prints the median value of the array
-				; Pre-conditions:	  curVal contains 4, compCheck contains 0
-				; Post-conditions:	  Median printed to console
-				; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
-				;					  PARAM_3: OFFSET medianMsg 
-				; Registers changed:  eax, ebx, edx
-				;------------------------------------------------------------------------------
+				; Pull off a plus sign
+ 00000160  49				dec		ecx
+ 00000161  EB 25			jmp		POSITIVE
 
- 000001B8			displayMedian PROC
- 000001B8  55				push	ebp
- 000001B9  8B EC			mov		ebp, esp
+ 00000163			NO_SIGN:																			; No sign JMP From: line-254
 
-				; Print the median message
- 000001BB  8B 55 10			mov		edx, PARAM_3
- 000001BE  E8 00000000 E		call	WriteString
+				; Pull off nothing and reload first byte
+ 00000163  4E				dec		esi
+ 00000164  EB 22			jmp		POSITIVE																; Process positive value JMP To: line-298
 
-				; Get index of middle elements
- 000001C3  BA 00000000			mov		edx, 0
- 000001C8  8B 45 0C			mov		eax, [PARAM_2]
- 000001CB  BB 00000002			mov		ebx, 2
- 000001D0  F7 F3			div		ebx
+ 00000166			NEGATIVE:																			; Process negative value LOOP From: line-290
 
-				; Jump to even or odd calculation
- 000001D2  83 FA 00			cmp		edx, 0
- 000001D5  75 21			jne		ODD_MEDIAN																; If edx != 0 (Not Possible!) JMP To: line-412
-
- 000001D7			EVEN_MEDIAN:																		; No need to jump, this will always be hit
-
-				; Get middle 2 elements (100 and 99)
- 000001D7  8B 45 08			mov		eax, PARAM_1
- 000001DA  05 0000018C			add		eax, 99 * TYPE DWORD
- 000001DF  8B 18			mov		ebx, [eax]
- 000001E1  83 C0 04			add		eax, TYPE DWORD
- 000001E4  8B 00			mov		eax, [eax]
-
-				; Calculate the median (.5 rounds up)
- 000001E6  03 C3			add		eax, ebx
- 000001E8  BB 00000002			mov		ebx, 2
- 000001ED  F7 F3			div		ebx
- 000001EF  03 C2			add		eax, edx
- 000001F1  E8 00000000 E		call	WriteDec
- 000001F6  EB 00			jmp		FINISH_MEDIAN															; If odd container were possible, this must be implemented
-
- 000001F8			ODD_MEDIAN:																			; The container is fixed as even, so this won't be reached
-
- 000001F8			FINISH_MEDIAN:																		; Even container size JMP From: line-410
-
-				; Exit after median created
- 000001F8  5D				pop		ebp
- 000001F9  C3				ret		3 * TYPE PARAM_1
-
- 000001FA			displayMedian ENDP
-
-
-				;------------------------------------------------------------------------------
-				; countList
-				;
-				; Description:        Counts occurances of each number and prints them
-				; Pre-conditions:	  OFFSET array, ARRAY_SIZE, OFFSET numCounts, RANGE_LO
-				;					  pushed onto the stack
-				; Post-conditions:	  The 20 current number occurances in array stored in numCounts
-				; Parameters:		  PARAM_1: OFFSET array, PARAM_2: ARRAY_SIZE (value) 
-				;					  PARAM_3: OFFSET numCounts, PARAM_4: RANGE_LO (value)
-				; Registers changed:  eax, ebx, ecx, edx, esi, edi
-				;------------------------------------------------------------------------------
-
- 000001FA			countList PROC
-
-				; Set up stack frame
- 000001FA  55				push	ebp
- 000001FB  8B EC			mov		ebp, esp
- 000001FD  8B 5D 14			mov		ebx, PARAM_4
- 00000200  8B 7D 10			mov		edi, [PARAM_3]
-
- 00000203			START_LOOP:																			; Iterate through array for each num 10-29 LOOP From: line-477
-
-				; Initialize the outer loop
- 00000203  8B 75 08			mov		esi, [PARAM_1]
- 00000206  8B 4D 0C			mov		ecx, PARAM_2
- 00000209  B8 00000000			mov		eax, 0
+				; Validate possible negative entry
+ 00000166  AC				lodsb
+ 00000167  3C 30			cmp		al, 48
+ 00000169  7C AF			jl		ERROR_PROMPT															; Invalid char JMP To: line-234
+ 0000016B  3C 39			cmp		al, 57
+ 0000016D  7F AB			jg		ERROR_PROMPT															; Invalid char JMP To: line-234
 					
- 0000020E			COUNT_LOOP:																			; Array not iterated through yet LOOP From: line-456 or 464
+				; Process valid negative digit
+ 0000016F  2C 30			sub		al, 48
+ 00000171  0F B6 F8			movzx	edi, al
+ 00000174  8B C2			mov		eax, edx
+ 00000176  F7 E3			mul		ebx
+ 00000178  70 A0			jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-234
+ 0000017A  03 C7			add		eax, edi
+ 0000017C  70 9C			jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-234
+ 0000017E  8B D0			mov		edx, eax
+ 00000180  E2 E4			loop	NEGATIVE																; LOOP through negative string To: line-274
 
-				; Check for number and branch if found
- 0000020E  3B 1E			cmp		ebx, [esi]
- 00000210  74 07			je		NUM_FOUND																; Searched num found JMP To: line-459
- 00000212  83 C6 04			add		esi, TYPE DWORD
- 00000215  E2 F7			loop	COUNT_LOOP																; Iterate through entire array LOOP To: line-450
- 00000217  EB 08			jmp		NEXT_NUMBER																; Array iterated through JMP To: line-467
+				; Turn processed number negative
+ 00000182  F7 D8			neg		eax
+ 00000184  8B D0			mov		edx, eax
+ 00000186  EB 24			jmp		NUMBER_RANGE															; Negative number converted, now must check range JMP To: line-319
 
- 00000219			NUM_FOUND:																			; Searched num found JMP From: line-454
+ 00000188			POSITIVE:																			; Process positive value LOOP From: line-317
 
-				; Loop through each value and count occurance
- 00000219  40				inc		eax
- 0000021A  83 C6 04			add		esi, TYPE DWORD
- 0000021D  E2 EF			loop	COUNT_LOOP																; Iterate through whole array LOOP To: line-450
- 0000021F  EB 00			jmp		NEXT_NUMBER																; Full interation of array JMP To: line-467
+				; Validate possible positive value
+ 00000188  AC				lodsb
+ 00000189  3C 30			cmp		al, 48
+ 0000018B  7C 8D			jl		ERROR_PROMPT															; Invalid char JMP To: line-234
+ 0000018D  3C 39			cmp		al, 57
+ 0000018F  7F 89			jg		ERROR_PROMPT															; Invalid char JMP To: line-234
 
- 00000221			NEXT_NUMBER:																		; Increment num to check JMP From: line-457 or 465
+				; Process valid positive digit
+ 00000191  2C 30			sub		al, 48
+ 00000193  0F BE F8			movsx	edi, al
+ 00000196  8B C2			mov		eax, edx
+ 00000198  F7 E3			mul		ebx
+ 0000019A  0F 80 FFFFFF7A		jo		ERROR_PROMPT															; Prevent overflow of edx JMP To: line-234
+ 000001A0  03 C7			add		eax, edi
+ 000001A2  0F 80 FFFFFF72		jo		ERROR_PROMPT															; Prevent overflow of eax JMP To: line-234
+ 000001A8  8B D0			mov		edx, eax
+ 000001AA  E2 DC			loop	POSITIVE																; LOOP To: line-299
 
-				; Enter the count into occurance list
- 00000221  89 07			mov		[edi], eax
- 00000223  83 C7 04			add		edi, TYPE DWORD
+ 000001AC			NUMBER_RANGE:																		; Check converted number's range JMP From: line-297
 
-				; Increment the number to check for
- 00000226  43				inc		ebx
- 00000227  83 FB 1E			cmp		ebx, 30
- 0000022A  74 02			je		FINISH_COUNT															; After counting 29 JMP To: line-479
- 0000022C  EB D5			jmp		START_LOOP																; 29 not yet counted JMP To: line-443
+				; Check that the number is between min and max int size
+ 000001AC  81 FA 7FFFFFFF		cmp		edx, 2147483647
+ 000001B2  0F 8F FFFFFF62		jg		ERROR_PROMPT															; Number above signed 32bit size JMP To: line-234
+ 000001B8  81 FA 80000000		cmp		edx, -2147483648
+ 000001BE  0F 8C FFFFFF56		jl		ERROR_PROMPT															; Number below signed 32bit size JMP To: line-234	
+					
+				; Store validated number in testedNum
+ 000001C4  8B 45 1C			mov		eax, [PARAM_6]
+ 000001C7  89 10			mov		[eax], edx
 
- 0000022E			FINISH_COUNT:																		; Count array filled JMP From: line-476
+				; Clean up and return
+ 000001C9  E8 00000000 E		call	CrLf
+ 000001CE  61				popad
+ 000001CF  5D				pop		ebp
+ 000001D0  C2 0018			ret		6 * TYPE DWORD
 
-				; Exit after counts created
- 0000022E  5D				pop		ebp
- 0000022F  C3				ret		4 * TYPE PARAM_1
+ 000001D3			readVal ENDP
 
- 00000230			countList ENDP
+
+				;------------------------------------------------------------------------------
+				; getValues
+				;
+				; Description:       Gets 10 valid numbers and stores them in an array
+				; Pre-conditions:	 Necessary parameters pushed onto the stack in order
+				; Post-conditions:	 10 valid 32bit signed integers stored in numArray
+				; Parameters:		 PARAM_1: OFFSET strTemp, PARAM_2: STR_SIZE (value)
+				;					 PARAM_3: OFFSET numArray, PARAM_4: ARRAY_SIZE
+				;					 PARAM_5: OFFSET userPrompt, PARAM_6: OFFSET errMsg
+				;					 PARAM_7: OFFSET errPrompt, PARAM_8: OFFSET testedNum
+				; Registers changed: None
+				;------------------------------------------------------------------------------
+
+ 000001D3			getValues PROC
+
+				; Set up registers
+ 000001D3  55				push	ebp
+ 000001D4  8B EC			mov		ebp, esp
+ 000001D6  60				pushad
+ 000001D7  8B 4D 14			mov		ecx, PARAM_4
+ 000001DA  8B 7D 10			mov		edi, PARAM_3
+ 000001DD  8B 75 08			mov		esi, PARAM_1
+
+ 000001E0			FILL_LOOP:																			; For filling the array LOOP From: line-379
+
+				; Call proc to get string and return num in testedNum
+ 000001E0  FF 75 24			push	PARAM_8
+ 000001E3  FF 75 20			push	PARAM_7
+ 000001E6  FF 75 1C			push	PARAM_6
+ 000001E9  FF 75 18			push	PARAM_5
+ 000001EC  FF 75 0C			push	PARAM_2
+ 000001EF  FF 75 08			push	PARAM_1
+ 000001F2  E8 FFFFFEF1			call	readVal
+
+				; Number passed validation so add it to the array
+ 000001F7  8B 45 24			mov		eax, [PARAM_8]
+ 000001FA  8B 18			mov		ebx, [eax]
+ 000001FC  89 1F			mov		[edi], ebx
+ 000001FE  83 C7 04			add		edi, 4
+ 00000201  E2 DD			loop	FILL_LOOP																; LOOP To: line-363
+
+				; Clean up and return
+ 00000203  61				popad
+ 00000204  5D				pop		ebp
+ 00000205  C2 0020			ret		8 * TYPE DWORD
+
+ 00000208			getValues ENDP
+
+
+				;------------------------------------------------------------------------------
+				; calculations
+				;
+				; Description:        Calculates the sum and average of numArray
+				; Pre-conditions:	  Necessary parameters pushed onto the stack in order
+				; Post-conditions:	  Sum stored in numSum and rounded average stored in numAvg
+				; Parameters:		  PARAM_1: OFFSET numArray, PARAM_2: ARRAY_SIZE (value)
+				;					  PARAM_3: OFFSET numSum, PARAM_4: OFFSET numAvg
+				; Registers changed:  None
+				;------------------------------------------------------------------------------
+
+ 00000208			calculations PROC
+
+				; Set up registers
+ 00000208  55				push	ebp
+ 00000209  8B EC			mov		ebp, esp
+ 0000020B  60				pushad
+ 0000020C  8B 7D 08			mov		edi, [PARAM_1]
+ 0000020F  8B 4D 0C			mov		ecx, PARAM_2
+ 00000212  B8 00000000			mov		eax, 0
+
+ 00000217			SUM_lOOP:																			; LOOP through array From: line-416
+
+				; Sum up the values in the array
+ 00000217  8B 1F			mov		ebx, [edi]
+ 00000219  03 C3			add		eax, ebx
+ 0000021B  83 C7 04			add		edi, 4
+ 0000021E  E2 F7			loop	SUM_LOOP																; LOOP To: line-410
+
+				; Store sum in numSum
+ 00000220  8B 5D 10			mov		ebx, [PARAM_3]
+ 00000223  89 03			mov		[ebx], eax
+
+				; Calculate the average
+ 00000225  8B 5D 0C			mov		ebx, PARAM_2
+ 00000228  99				cdq
+ 00000229  F7 FB			idiv	ebx
+ 0000022B  83 F8 00			cmp		eax, 0
+ 0000022E  7C 08			jl		ROUND_NEGATIVE															; If negative JMP To: line-435
+
+				; Round >= 0.5 up to next integer
+ 00000230  83 FA 05			cmp		edx, 5
+ 00000233  7C 0B			jl		AVERAGE_FINISHED														; If positive remainder < 0.5 JMP To: line-443
+ 00000235  40				inc		eax
+ 00000236  EB 08			jmp		AVERAGE_FINISHED														; After rounding JMP To: line-443
+
+ 00000238			ROUND_NEGATIVE:																		; JMP From: line-427
+
+				; Round <= 0.5 down to next lower integer
+ 00000238  F7 DA			neg		edx
+ 0000023A  83 FA 05			cmp		edx, 5
+ 0000023D  7C 01			jl		AVERAGE_FINISHED														; If negative remainder < 0.5 JMP To: line-443
+ 0000023F  48				dec		eax
+
+ 00000240			AVERAGE_FINISHED:																	; JMP From: line-431, 433, 440
+
+				; Store the average in numAvg
+ 00000240  8B 5D 14			mov		ebx, [PARAM_4]
+ 00000243  89 03			mov		[ebx], eax
+
+				; Clean up and return
+ 00000245  61				popad
+ 00000246  5D				pop		ebp
+ 00000247  C2 0010			ret		4 * TYPE DWORD
+
+ 0000024A			calculations ENDP
+
+
+				;------------------------------------------------------------------------------
+				; writeVal
+				;
+				; Description:        Converts a 32bit signed integer to a string and prints
+				;					  it to the console using displayString
+				; Pre-conditions:	  Necessary parameters pushed onto the stack in order
+				; Post-conditions:	  Numbers converted to string and printed to console
+				; Parameters:		  PARAM_1: number (value), PARAM_2: OFFSET strTemp
+				; Registers changed:  None
+				;------------------------------------------------------------------------------
+
+ 0000024A			writeVal PROC
+
+				; Set up registers
+ 0000024A  55				push	ebp
+ 0000024B  8B EC			mov		ebp, esp
+ 0000024D  60				pushad
+ 0000024E  FC				cld
+ 0000024F  8B 45 08			mov		eax, [PARAM_1]
+ 00000252  8B 7D 0C			mov		edi, [PARAM_2]
+ 00000255  BB 0000000A			mov		ebx, 10
+ 0000025A  6A 00			push	0
+
+				; Check for sign of number
+ 0000025C  83 F8 00			cmp		eax, 0
+ 0000025F  7C 15			jl		NEGATIVE_INT															; If int < 0, then JMP To: line-505
+
+ 00000261			POSITIVE_INT:																		; Loop to create positive number byte JMP From: line-494
+
+				; Process a positive signed int digit
+ 00000261  99				cdq
+ 00000262  F7 FB			idiv	ebx
+ 00000264  83 C2 30			add		edx, 48
+ 00000267  52				push	edx
+
+				; Quotient == 0, then digit is finished
+ 00000268  83 F8 00			cmp		eax, 0
+ 0000026B  75 F4			jne		POSITIVE_INT															; More positive bytes to process JMP To: line-484
+
+ 0000026D			FILL_POSITIVE:																		; Fill positive number string JMP From: line-502
+
+				; Pop the positive numbers from the stack
+ 0000026D  58				pop		eax
+ 0000026E  AA				stosb
+ 0000026F  83 F8 00			cmp		eax, 0
+ 00000272  75 F9			jne		FILL_POSITIVE															; More positive bytes JMP To: line-496
+ 00000274  EB 1C			jmp		FINISH_CONVERT															; Positive string created JMP To: line-532
+
+ 00000276			NEGATIVE_INT:																		; Loop to create negative number bytes JMP From: line-516
+
+				; Process a negative signed int to string
+ 00000276  99				cdq
+ 00000277  F7 FB			idiv	ebx
+ 00000279  F7 DA			neg		edx
+ 0000027B  83 C2 30			add		edx, 48
+ 0000027E  52				push	edx
+
+				; Quotient == 0, then digit is finished
+ 0000027F  83 F8 00			cmp		eax, 0
+ 00000282  75 F2			jne		NEGATIVE_INT															; More negative bytes to process JMP To: line-505
+
+				; Add minus sign to negative number string
+ 00000284  B0 2D			mov		al, 45
+ 00000286  88 07			mov		[edi], al
+ 00000288  47				inc		edi
+
+ 00000289			FILL_NEGATIVE:																		; Fill negative number string JMP From: line-529
+
+				; Pop the positive numbers from the stack
+ 00000289  58				pop		eax
+ 0000028A  AA				stosb
+ 0000028B  83 F8 00			cmp		eax, 0
+ 0000028E  75 F9			jne		FILL_NEGATIVE															; More negative bytes JMP To: line-523
+ 00000290  EB 00			jmp		FINISH_CONVERT															; Negative number string created JMP To: line-532
+
+ 00000292			FINISH_CONVERT:																		; Number string created JMP From: line-502, 530
+
+				; Print the string to the console
+					displayString PARAM_2
+ 00000292  52		     1		push	edx
+ 00000293  8B 55 0C	     1		mov		edx, PARAM_2
+ 00000296  E8 00000000 E     1		call	WriteString
+ 0000029B  5A		     1		pop		edx
+
+				; Clean up and return
+ 0000029C  61				popad
+ 0000029D  5D				pop		ebp
+ 0000029E  C2 0008			ret		2 * TYPE DWORD
+
+ 000002A1			writeVal ENDP
+
+
+				;------------------------------------------------------------------------------
+				; printRslt
+				;
+				; Description:       Print the array, sum, and average with their accompanying
+				;					 messages. It calls writeVal to convert the numbers to strings
+				; Pre-conditions:	 Necessary parameters pushed onto the stack in order
+				; Post-conditions:	 The array, sum, and average are printed to the console
+				; Parameters:		 PARAM_1: OFFSET listMsg, PARAM_2: OFFSET numArray
+				;					 PARAM_3: OFFSET sumMsg, PARAM_4: OFFSET numSum
+				;					 PARAM_5: OFFSET avgMsg, PARAM_6: OFFSET numAvg
+				;					 PARAM_7: OFFSET strTemp, PARAM_8: ARRAY_SIZE (value)
+				; Registers changed: None
+				;------------------------------------------------------------------------------
+
+ 000002A1			printRslt PROC
+
+				; Set up registers
+ 000002A1  55				push	ebp
+ 000002A2  8B EC			mov		ebp, esp
+ 000002A4  60				pushad
+
+				; Display entered numbers
+					displayString PARAM_1
+ 000002A5  52		     1		push	edx
+ 000002A6  8B 55 08	     1		mov		edx, PARAM_1
+ 000002A9  E8 00000000 E     1		call	WriteString
+ 000002AE  5A		     1		pop		edx
+ 000002AF  E8 00000000 E		call	CrLf
+
+				; Set up array printing
+ 000002B4  8B 4D 24		    mov		ecx, PARAM_8
+ 000002B7  8B 7D 0C		    mov     edi, [PARAM_2]     
+
+ 000002BA			PRINT_LOOP:																			; LOOP through number array From: line-589
+
+				; Convert and print each array value
+ 000002BA  FF 75 20			push	PARAM_7
+ 000002BD  FF 37			push	[edi]
+ 000002BF  E8 FFFFFF86			call	writeVal
+
+				; Print a comma after the first 9 numbers
+ 000002C4  83 F9 01			cmp		ecx, 1
+ 000002C7  74 13			je		ARRAY_FINISHED															; After 9th comma JMP To: line-591
+ 000002C9  B0 2C			mov		al, 44
+ 000002CB  E8 00000000 E		call	writeChar
+ 000002D0  B0 20			mov		al, 32
+ 000002D2  E8 00000000 E		call	writeChar
+ 000002D7  83 C7 04			add		edi, 4
+ 000002DA  E2 DE			loop	PRINT_LOOP																; LOOP To: line-574
+
+ 000002DC			ARRAY_FINISHED:																		; After the array is printed JMP From: line-583
+
+				; Display the sum
+ 000002DC  E8 00000000 E		call	CrLf
+				    displayString PARAM_3
+ 000002E1  52		     1		push	edx
+ 000002E2  8B 55 10	     1		mov		edx, PARAM_3
+ 000002E5  E8 00000000 E     1		call	WriteString
+ 000002EA  5A		     1		pop		edx
+ 000002EB  8B 7D 14			mov		edi, [PARAM_4]
+ 000002EE  FF 75 20			push	PARAM_7
+ 000002F1  FF 37			push	[edi]
+ 000002F3  E8 FFFFFF52			call	writeVal
+
+				; Display the average
+ 000002F8  E8 00000000 E		call	CrLf
+				    displayString PARAM_5
+ 000002FD  52		     1		push	edx
+ 000002FE  8B 55 18	     1		mov		edx, PARAM_5
+ 00000301  E8 00000000 E     1		call	WriteString
+ 00000306  5A		     1		pop		edx
+ 00000307  8B 7D 1C			mov		edi, [PARAM_6]
+ 0000030A  FF 75 20			push	PARAM_7
+ 0000030D  FF 37			push	[edi]
+ 0000030F  E8 FFFFFF36			call	writeVal
+
+				; Clean up and return
+ 00000314  E8 00000000 E		call	CrLf
+ 00000319  E8 00000000 E		call	CrLf
+ 0000031E  61				popad
+ 0000031F  5D				pop		ebp
+ 00000320  C2 0020			ret		8 * TYPE DWORD
+
+ 00000323			printRslt ENDP
 
 
 				;------------------------------------------------------------------------------
@@ -616,23 +819,29 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 				; Pre-conditions:	  quitPrompt pushed onto stack
 				; Post-conditions:	  quitVal stored in eax upon return
 				; Parameters:		  PARAM_1: OFFSET quitPrompt
-				; Registers changed:  edx, eax
+				; Registers changed:  eax
 				;------------------------------------------------------------------------------
 
- 00000230			quit PROC
+ 00000323			quit PROC
 
 				; Set up message in edx
- 00000230  55				push	ebp
- 00000231  8B EC			mov		ebp, esp
- 00000233  8B 55 08			mov		edx, PARAM_1
+ 00000323  55				push	ebp
+ 00000324  8B EC			mov		ebp, esp
+ 00000326  52				push	edx
+					displayString PARAM_1
+ 00000327  52		     1		push	edx
+ 00000328  8B 55 08	     1		mov		edx, PARAM_1
+ 0000032B  E8 00000000 E     1		call	WriteString
+ 00000330  5A		     1		pop		edx
 
 				; Prompt the user and return bool in eax
- 00000236  E8 00000000 E		call	WriteString
- 0000023B  E8 00000000 E		call	ReadInt
- 00000240  5D				pop		ebp
- 00000241  C3				ret		1 * TYPE PARAM_1
+ 00000331  E8 00000000 E		call	ReadInt
+ 00000336  E8 00000000 E		call	CrLf
+ 0000033B  5A				pop		edx
+ 0000033C  5D				pop		ebp
+ 0000033D  C3				ret		1 * TYPE PARAM_1
 
- 00000242			quit ENDP
+ 0000033E			quit ENDP
 
 
 				;------------------------------------------------------------------------------
@@ -640,33 +849,45 @@ Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
 				;
 				; Description:        Prints the Goodbye message
 				; Pre-conditions:	  byePrompt pushed onto stack
-				; Post-conditions:	  none
+				; Post-conditions:	  Goodbye printed
 				; Parameters:		  PARAM_1: OFFSET byePrompt
-				; Registers changed:  edx
+				; Registers changed:  None
 				;------------------------------------------------------------------------------
 
- 00000242			farewell PROC															
+ 0000033E			farewell PROC															
 
 				; Set up message in edx
- 00000242  E8 00000000 E		call	CrLf
- 00000247  55				push	ebp
- 00000248  8B EC			mov		ebp, esp
- 0000024A  8B 55 08			mov		edx, PARAM_1
+ 0000033E  55				push	ebp
+ 0000033F  8B EC			mov		ebp, esp
+ 00000341  60				pushad
+					displayString PARAM_1
+ 00000342  52		     1		push	edx
+ 00000343  8B 55 08	     1		mov		edx, PARAM_1
+ 00000346  E8 00000000 E     1		call	WriteString
+ 0000034B  5A		     1		pop		edx
 
 				; Print the Goodbye message
- 0000024D  E8 00000000 E		call	WriteString
- 00000252  E8 00000000 E		call	CrLf
- 00000257  5D				pop		ebp
- 00000258  C3				ret		1 * TYPE PARAM_1
+ 0000034C  E8 00000000 E		call	CrLf
+ 00000351  61				popad
+ 00000352  5D				pop		ebp
+ 00000353  C3				ret		1 * TYPE PARAM_1
 
- 00000259			farewell ENDP
+ 00000354			farewell ENDP
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.24.28315.0	    02/24/20 14:31:32
+Microsoft (R) Macro Assembler Version 14.24.28315.0	    03/15/20 23:11:55
 /Program 6                 Program6_wrighada.as		     Symbols 2 - 1
 
 
+
+
+Macros:
+
+                N a m e                 Type
+
+displayString  . . . . . . . . .	Proc
+getString  . . . . . . . . . . .	Proc
 
 
 Structures and Unions:
@@ -757,8 +978,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000059A Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000259 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000002C4 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000354 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -865,35 +1086,37 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-countList  . . . . . . . . . . .	P Near	 000001FA _TEXT	Length= 00000036 Public STDCALL
-  START_LOOP . . . . . . . . . .	L Near	 00000203 _TEXT	
-  COUNT_LOOP . . . . . . . . . .	L Near	 0000020E _TEXT	
-  NUM_FOUND  . . . . . . . . . .	L Near	 00000219 _TEXT	
-  NEXT_NUMBER  . . . . . . . . .	L Near	 00000221 _TEXT	
-  FINISH_COUNT . . . . . . . . .	L Near	 0000022E _TEXT	
-displayList  . . . . . . . . . .	P Near	 00000122 _TEXT	Length= 00000053 Public STDCALL
-  PRINT_ARR_1  . . . . . . . . .	L Near	 00000142 _TEXT	
-  PRINT_ARR_2  . . . . . . . . .	L Near	 0000015B _TEXT	
-  PRINT_CRLF . . . . . . . . . .	L Near	 00000162 _TEXT	
-  FINISH_PRINT . . . . . . . . .	L Near	 0000016E _TEXT	
-displayMedian  . . . . . . . . .	P Near	 000001B8 _TEXT	Length= 00000042 Public STDCALL
-  EVEN_MEDIAN  . . . . . . . . .	L Near	 000001D7 _TEXT	
-  ODD_MEDIAN . . . . . . . . . .	L Near	 000001F8 _TEXT	
-  FINISH_MEDIAN  . . . . . . . .	L Near	 000001F8 _TEXT	
-exchangeElements . . . . . . . .	P Near	 0000019E _TEXT	Length= 0000001A Public STDCALL
-farewell . . . . . . . . . . . .	P Near	 00000242 _TEXT	Length= 00000017 Public STDCALL
-fillArray  . . . . . . . . . . .	P Near	 00000101 _TEXT	Length= 00000021 Public STDCALL
-  ARRAY_FILL . . . . . . . . . .	L Near	 0000010A _TEXT	
-introduction . . . . . . . . . .	P Near	 000000CB _TEXT	Length= 00000036 Public STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000000CB Public STDCALL
-  MAIN_LOOP  . . . . . . . . . .	L Near	 00000019 _TEXT	
+calculations . . . . . . . . . .	P Near	 00000208 _TEXT	Length= 00000042 Public STDCALL
+  SUM_lOOP . . . . . . . . . . .	L Near	 00000217 _TEXT	
+  ROUND_NEGATIVE . . . . . . . .	L Near	 00000238 _TEXT	
+  AVERAGE_FINISHED . . . . . . .	L Near	 00000240 _TEXT	
+farewell . . . . . . . . . . . .	P Near	 0000033E _TEXT	Length= 00000016 Public STDCALL
+getValues  . . . . . . . . . . .	P Near	 000001D3 _TEXT	Length= 00000035 Public STDCALL
+  FILL_LOOP  . . . . . . . . . .	L Near	 000001E0 _TEXT	
+introduction . . . . . . . . . .	P Near	 000000AA _TEXT	Length= 0000003E Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000000AA Public STDCALL
+  MAIN_LOOP  . . . . . . . . . .	L Near	 00000014 _TEXT	
+printRslt  . . . . . . . . . . .	P Near	 000002A1 _TEXT	Length= 00000082 Public STDCALL
+  PRINT_LOOP . . . . . . . . . .	L Near	 000002BA _TEXT	
+  ARRAY_FINISHED . . . . . . . .	L Near	 000002DC _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-quit . . . . . . . . . . . . . .	P Near	 00000230 _TEXT	Length= 00000012 Public STDCALL
+quit . . . . . . . . . . . . . .	P Near	 00000323 _TEXT	Length= 0000001B Public STDCALL
+readVal  . . . . . . . . . . . .	P Near	 000000E8 _TEXT	Length= 000000EB Public STDCALL
+  ERROR_PROMPT . . . . . . . . .	L Near	 0000011A _TEXT	
+  VALIDATE . . . . . . . . . . .	L Near	 00000152 _TEXT	
+  REMOVE_MINUS . . . . . . . . .	L Near	 0000015D _TEXT	
+  REMOVE_PLUS  . . . . . . . . .	L Near	 00000160 _TEXT	
+  NO_SIGN  . . . . . . . . . . .	L Near	 00000163 _TEXT	
+  NEGATIVE . . . . . . . . . . .	L Near	 00000166 _TEXT	
+  POSITIVE . . . . . . . . . . .	L Near	 00000188 _TEXT	
+  NUMBER_RANGE . . . . . . . . .	L Near	 000001AC _TEXT	
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-sortList . . . . . . . . . . . .	P Near	 00000175 _TEXT	Length= 00000029 Public STDCALL
-  OUTER_LOOP . . . . . . . . . .	L Near	 0000017C _TEXT	
-  INNER_LOOP . . . . . . . . . .	L Near	 00000180 _TEXT	
-  INCREMENT  . . . . . . . . . .	L Near	 00000194 _TEXT	
+writeVal . . . . . . . . . . . .	P Near	 0000024A _TEXT	Length= 00000057 Public STDCALL
+  POSITIVE_INT . . . . . . . . .	L Near	 00000261 _TEXT	
+  FILL_POSITIVE  . . . . . . . .	L Near	 0000026D _TEXT	
+  NEGATIVE_INT . . . . . . . . .	L Near	 00000276 _TEXT	
+  FILL_NEGATIVE  . . . . . . . .	L Near	 00000289 _TEXT	
+  FINISH_CONVERT . . . . . . . .	L Near	 00000292 _TEXT	
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 
 
@@ -911,9 +1134,8 @@ Symbols:
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
 ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
-ARRAY_SIZE . . . . . . . . . . .	Number	 000000C8h   
+ARRAY_SIZE . . . . . . . . . . .	Number	 0000000Ah   
 CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
-COUNT_LIST_SIZE  . . . . . . . .	Number	 00000014h   
 CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
 CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
 CTRL_MASK  . . . . . . . . . . .	Number	 0000000Ch   
@@ -1020,9 +1242,11 @@ PARAM_1  . . . . . . . . . . . .	Text   	 [ebp + 8]
 PARAM_2  . . . . . . . . . . . .	Text   	 [ebp + 12]
 PARAM_3  . . . . . . . . . . . .	Text   	 [ebp + 16]
 PARAM_4  . . . . . . . . . . . .	Text   	 [ebp + 20]
+PARAM_5  . . . . . . . . . . . .	Text   	 [ebp + 24]
+PARAM_6  . . . . . . . . . . . .	Text   	 [ebp + 28]
+PARAM_7  . . . . . . . . . . . .	Text   	 [ebp + 32]
+PARAM_8  . . . . . . . . . . . .	Text   	 [ebp + 36]
 PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
-RANGE_HI . . . . . . . . . . . .	Number	 0000001Dh   
-RANGE_LO . . . . . . . . . . . .	Number	 0000000Ah   
 RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
 RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
 ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
@@ -1033,6 +1257,7 @@ SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h
 STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
 STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
 STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+STR_SIZE . . . . . . . . . . . .	Number	 0000001Fh   
 SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
 TAB  . . . . . . . . . . . . . .	Number	 00000009h   
 TRUE . . . . . . . . . . . . . .	Number	 00000001h   
@@ -1118,16 +1343,18 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
-array  . . . . . . . . . . . . .	DWord	 00000226 _DATA	
+avgMsg . . . . . . . . . . . . .	Byte	 00000204 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-byePrompt  . . . . . . . . . . .	Byte	 000001FB _DATA	
+byePrompt  . . . . . . . . . . .	Byte	 00000241 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
+errMsg . . . . . . . . . . . . .	Byte	 00000168 _DATA	
+errPrompt  . . . . . . . . . . .	Byte	 000001AF _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
-instruct . . . . . . . . . . . .	Byte	 00000042 _DATA	
+instruct . . . . . . . . . . . .	Byte	 00000056 _DATA	
 intro  . . . . . . . . . . . . .	Byte	 00000000 _DATA	
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
@@ -1135,16 +1362,19 @@ lightGray  . . . . . . . . . . .	Number	 00000007h
 lightGreen . . . . . . . . . . .	Number	 0000000Ah   
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
-listMsg  . . . . . . . . . . . .	Byte	 00000185 _DATA	
+listMsg  . . . . . . . . . . . .	Byte	 000001C2 _DATA	
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-medianMsg  . . . . . . . . . . .	Byte	 0000015B _DATA	
-numCounts  . . . . . . . . . . .	DWord	 00000546 _DATA	
-programmer . . . . . . . . . . .	Byte	 00000021 _DATA	
-quitPrompt . . . . . . . . . . .	Byte	 000001D7 _DATA	
-quitVal  . . . . . . . . . . . .	DWord	 00000596 _DATA	
+numArray . . . . . . . . . . . .	DWord	 00000270 _DATA	
+numAvg . . . . . . . . . . . . .	DWord	 000002C0 _DATA	
+numSum . . . . . . . . . . . . .	DWord	 000002BC _DATA	
+programmer . . . . . . . . . . .	Byte	 00000036 _DATA	
+quitPrompt . . . . . . . . . . .	Byte	 0000021D _DATA	
+quitVal  . . . . . . . . . . . .	DWord	 0000026C _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-sortMsg  . . . . . . . . . . . .	Byte	 00000169 _DATA	
-unsortMsg  . . . . . . . . . . .	Byte	 0000013D _DATA	
+strTemp  . . . . . . . . . . . .	Byte	 00000298 _DATA	
+sumMsg . . . . . . . . . . . . .	Byte	 000001E6 _DATA	
+testedNum  . . . . . . . . . . .	DWord	 000002B8 _DATA	
+userPrompt . . . . . . . . . . .	Byte	 00000149 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
